@@ -22,7 +22,4 @@ public abstract class Item implements Inspectable, Serializable {
     public String getDescription() {
         return this.description;
     }
-
-    public abstract void interact(Player player, Game game);
-    
 }

@@ -13,7 +13,7 @@ public class Inventory {
         return this.inventory.get(index);
     }
     public boolean hasItem(Item item) {
-
+        return this.inventory.contains(item);
     }
     public boolean addItem(Item item) {
         if (this.inventory.size() < this.maxSize) {
