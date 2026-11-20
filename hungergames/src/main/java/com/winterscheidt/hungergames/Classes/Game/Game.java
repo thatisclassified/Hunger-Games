@@ -17,6 +17,12 @@ import com.winterscheidt.hungergames.Interfaces.Usable;
 public class Game implements Serializable {
     private List<Location> locations = new ArrayList<>();
     private List<Entity> entities = new ArrayList<>();
+    private List<GameAction> currentMenu;
+
+    public void openMenu(List<GameAction> menu) {
+        this.currentMenu = menu;
+        // Notify your UI/Discord listener to render 'currentMenu'
+    }
 
     public List<GameAction> getMoveActions(Entity entity) {
         List<GameAction> actions = new ArrayList<>();
@@ -24,6 +30,7 @@ public class Game implements Serializable {
             actions.add(new GameAction("Move: " + locName, true,
             () -> entity.move(locName)));
         }
+        actions.add(new GameAction("Back", false, () -> openMenu(getMainActions(entity))));
         return actions;
     }
 
@@ -34,27 +41,27 @@ public class Game implements Serializable {
                 actions.add(new GameAction("Inspect " + item.getName(), false, null));
             }
         }
+        actions.add(new GameAction("Back", false, () -> openMenu(getMainActions(entity))));
         return actions;
     }
 
     public List<GameAction> getInteractActions(Player entity) {
         List<GameAction> actions = new ArrayList<>();
-        if (!entity.isAI()) {
-            for (Item item : entity.getLocation().getItems()) {
-                if (item instanceof Attainable) {
-                    actions.add(new GameAction("Pick up " + item.getName(), true, null));
-                }
-                if (item instanceof Interactable) {
-                    actions.add(new GameAction("Interact with " + item.getName(), true, null));
-                }
+        for (Item item : entity.getLocation().getItems()) {
+            if (item instanceof Attainable) {
+                actions.add(new GameAction("Pick up " + item.getName(), true, null));
+            }
+            if (item instanceof Interactable) {
+                actions.add(new GameAction("Interact with " + item.getName(), true, null));
             }
         }
+        actions.add(new GameAction("Back", false, () -> openMenu(getMainActions(entity))));
         return actions;
     }
 
     public List<GameAction> getInventoryActions(Player entity) {
         List<GameAction> actions = new ArrayList<>();
-        if (entity.getInventory().getSize() < entity.getInventory().getMaxSize()) {
+        if (entity.getEquipped() != null && entity.getInventory().getSize() < entity.getInventory().getMaxSize()) {
             actions.add(new GameAction("Unequip " + entity.getEquipped().getName(), false, 
             () -> entity.unequipItem()));
         }
@@ -68,6 +75,7 @@ public class Game implements Serializable {
                 () -> entity.useItem(item, this))); // Should this be passing in a game?
             }
         }
+        actions.add(new GameAction("Back", false, () -> openMenu(getMainActions(entity))));
         return actions;
     }
 
@@ -80,6 +88,7 @@ public class Game implements Serializable {
                 // Might add some more actions later, ie, talk()
             }
         }
+        actions.add(new GameAction("Back", false, () -> openMenu(getMainActions(entity))));
         return actions;
     }
 
@@ -88,36 +97,22 @@ public class Game implements Serializable {
         if (entity instanceof Player) {
             Player player = (Player) entity;
             if (!entity.isAI()) {
-                actions.add(new GameAction("1: Look Around", false, null));
+                actions.add(new GameAction("Look Around", false, null));
             }
-            actions.add(new GameAction("2: Move...", false, 
-            () -> {
-                // And do something with it
-                getMoveActions(player);
-            }));
-            actions.add(new GameAction("3: Inspect...", false, 
-            () -> {
-                // And do something with it
-                getInspectActions(player);
-            }));
-            actions.add(new GameAction("4: Pick Up / Interact...", false, 
-            () -> {
-                // And do something with it
-                getInteractActions(player);
-            }));
-            actions.add(new GameAction("5: Use / Equip...", false, 
-            () -> {
-                // And do something with it
-                getInventoryActions(player);
-            }));
-            actions.add(new GameAction("6: Attack...", false, 
-            () -> {
-                // And do something with it
-                getEntityActions(player);
-            }));
-            
+            actions.add(new GameAction("Move...", false, 
+            () -> openMenu(getMoveActions(player))));
+            if (!entity.isAI()) {
+                actions.add(new GameAction("Inspect...", false, 
+                () -> openMenu(getInspectActions(player))));
+            }
+            actions.add(new GameAction("Pick Up / Interact...", false, 
+            () -> openMenu(getInteractActions(player))));
+            actions.add(new GameAction("Use / Equip...", false, 
+            () -> openMenu(getInventoryActions(player))));
+            actions.add(new GameAction("Attack...", false, 
+            () -> openMenu(getEntityActions(player))));
+            actions.add(new GameAction("Rest", true, null));
         }
-
         return actions;
     }
 }
