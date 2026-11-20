@@ -1,10 +1,11 @@
 package com.winterscheidt.hungergames.Classes.Entities;
 
 import com.winterscheidt.hungergames.Interfaces.Inspectable;
-import com.winterscheidt.hungergames.classes.Game.Game;
-import com.winterscheidt.hungergames.classes.Game.Location;
+import java.io.Serializable;
+import com.winterscheidt.hungergames.Classes.Game.Game;
+import com.winterscheidt.hungergames.Classes.Game.Location;
 
-public abstract class Entity implements Inspectable {
+public abstract class Entity implements Inspectable, Serializable {
     // Fields
     protected String name;
     protected String description;

@@ -1,12 +1,13 @@
 package com.winterscheidt.hungergames.Classes.Items;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-
 import com.winterscheidt.hungergames.Interfaces.Inspectable;
-import com.winterscheidt.hungergames.classes.Living.Player;
+import com.winterscheidt.hungergames.Classes.Entities.Player;
+import com.winterscheidt.hungergames.Classes.Game.Game;
 
-public abstract class Item implements Inspectable {
+public abstract class Item implements Inspectable, Serializable {
     // Data fields
     protected String name;
     protected String description;
@@ -22,10 +23,6 @@ public abstract class Item implements Inspectable {
         return this.description;
     }
 
-    // public void onInteract(Player player) {
-    //     broadcast("You picked up " + this.name + ".");
-    //     player.giveItem(this);
-
-    // }
+    public abstract void interact(Player player, Game game);
     
 }

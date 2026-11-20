@@ -1,5 +1,5 @@
 package com.winterscheidt.hungergames.Interfaces;
 
-public class Equippable {
-    
+public interface Equippable {
+    void equip();
 }
