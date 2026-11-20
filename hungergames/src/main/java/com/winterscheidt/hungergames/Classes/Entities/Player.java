@@ -1,12 +1,18 @@
 package com.winterscheidt.hungergames.Classes.Entities;
 
+import java.util.List;
+
+import com.winterscheidt.hungergames.Classes.Game.Game;
+import com.winterscheidt.hungergames.Classes.Game.GameAction;
 import com.winterscheidt.hungergames.Classes.Items.Item;
 import com.winterscheidt.hungergames.Classes.Items.Weapon;
 import com.winterscheidt.hungergames.Classes.Utils.Inventory;
+import com.winterscheidt.hungergames.Interfaces.Aggressive;
 import com.winterscheidt.hungergames.Interfaces.Attainable;
 import com.winterscheidt.hungergames.Interfaces.Equippable;
+import com.winterscheidt.hungergames.Interfaces.Usable;
 
-public class Player extends Entity {
+public class Player extends Entity implements Aggressive {
     // Fields
     private Inventory inventory = new Inventory();
     private double hunger = 1;
@@ -25,6 +31,9 @@ public class Player extends Entity {
     }
     public double getThirst() {
         return this.thirst;
+    }
+    public Item getEquipped() {
+        return (Item) this.equippedItem;
     }
 
     // Setters / Adders
@@ -49,7 +58,26 @@ public class Player extends Entity {
     }
     public boolean equipItem(Item item) {
         if (item instanceof Equippable) {
+            Item temp = (Item) this.equippedItem;
             this.equippedItem = (Equippable) item;
+            this.inventory.removeItem(item);
+            if (temp != null) {
+                this.inventory.addItem(temp);
+            }
+            return true;
+        }
+        return false;
+    }
+    public boolean unequipItem() {
+        if (this.equippedItem != null && this.inventory.addItem((Item) this.equippedItem)) {
+            this.equippedItem = null;
+            return true;
+        }
+        return false;
+    }
+    public boolean useItem(Item item, Game game) {
+        if (item instanceof Usable) {
+            ((Usable) item).use(this, game);
             return true;
         }
         return false;

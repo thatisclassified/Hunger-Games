@@ -39,6 +39,9 @@ public class Location implements Serializable {
     public void removeConnection(String name) {
         this.connections.remove(name);
     }
+    public Map<String, Location> getConnections() {
+        return this.connections;
+    }
     public Location getConnection(String name) {
         return this.connections.get(name);
     }
@@ -48,6 +51,9 @@ public class Location implements Serializable {
     }
 
     // Items
+    public List<Item> getItems() {
+        return this.items;
+    }
     public Item getItem(int index) {
         return this.items.get(index);
     }

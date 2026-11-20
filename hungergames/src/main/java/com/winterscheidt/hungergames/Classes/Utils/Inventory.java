@@ -9,8 +9,23 @@ public class Inventory {
     private List<Item> inventory = new ArrayList<Item>();
     private int maxSize = 5;
 
+    public List<Item> getItems() {
+        return this.inventory;
+    }
     public Item getItem(int index) {
         return this.inventory.get(index);
+    }
+    public int getSize() {
+        return this.inventory.size();
+    }
+    public int getMaxSize() {
+        return this.maxSize();
+    }
+    public void setMaxSize(int maxSize) {
+        if (maxSize >= 0) {
+            this.maxSize = maxSize;
+            // Remove items?
+        }
     }
     public boolean hasItem(Item item) {
         return this.inventory.contains(item);
