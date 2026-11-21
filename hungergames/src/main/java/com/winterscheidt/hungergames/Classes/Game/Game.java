@@ -13,6 +13,7 @@ import com.winterscheidt.hungergames.Interfaces.Attainable;
 import com.winterscheidt.hungergames.Interfaces.Equippable;
 import com.winterscheidt.hungergames.Interfaces.Interactable;
 import com.winterscheidt.hungergames.Interfaces.Usable;
+import com.winterscheidt.hungergames.Utils.DetectionLevel;
 
 public class Game implements Serializable {
     private List<Location> locations = new ArrayList<>();
@@ -23,6 +24,25 @@ public class Game implements Serializable {
         this.currentMenu = menu;
         // Notify your UI/Discord listener to render 'currentMenu'
     }
+
+    public DetectionLevel checkDetection(Entity observer, Entity target) {
+        // Roll perception: base perception + random roll (e.g., 0.0 to 1.0)
+        double roll = observer.getPerception() + Math.random(); 
+        double effectiveObscurity = Math.min(0.95, target.getObscurity());
+        
+        double margin = roll - effectiveObscurity;
+
+        if (margin >= 0.4) {
+            return DetectionLevel.RECOGNIZED; // "You see Cato hiding near the rocks."
+        } else if (margin >= 0.0) {
+            return DetectionLevel.SPOTTED;    // "You spot a shadowy figure moving in the brush."
+        } else {
+            return DetectionLevel.HIDDEN;     // Completely unseen!
+        }
+    }
+
+
+    // MENU DEFINITIONS
 
     public List<GameAction> getMoveActions(Entity entity) {
         List<GameAction> actions = new ArrayList<>();

@@ -11,6 +11,7 @@ import com.winterscheidt.hungergames.Classes.Items.Item;
 public class Location implements Serializable {
     private String name;
     private String description;
+    private double baseObscurity = 0;
     private boolean dangerous = false;
     private List<Item> items = new ArrayList<>();
     private Map<String, Location> connections = new HashMap<>();
@@ -83,6 +84,9 @@ public class Location implements Serializable {
     }
     public boolean isDangerous() {
         return this.dangerous;
+    }
+    public double getBaseObscurity() {
+        return this.baseObscurity;
     }
 
     // And setters

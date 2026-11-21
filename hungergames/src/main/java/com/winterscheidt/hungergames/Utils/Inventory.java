@@ -1,4 +1,4 @@
-package com.winterscheidt.hungergames.Classes.Utils;
+package com.winterscheidt.hungergames.Utils;
 
 import java.util.ArrayList;
 import java.util.List;

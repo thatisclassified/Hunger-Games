@@ -7,14 +7,14 @@ import com.winterscheidt.hungergames.Interfaces.Usable;
 
 public class Edible extends Item implements Usable, Attainable {
     private int uses;
-    private double hunger;
-    private double thirst;
+    private double food;
+    private double water;
 
     // Method
     public void use(Player player, Game game) {
         if (this.uses > 0) {
-            player.addHunger(this.hunger);
-            player.addThirst(this.thirst);
+            player.addHunger(-this.food);
+            player.addThirst(-this.water);
             this.uses--;
         }
     }

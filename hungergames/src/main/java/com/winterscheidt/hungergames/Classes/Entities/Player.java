@@ -6,21 +6,28 @@ import com.winterscheidt.hungergames.Classes.Game.Game;
 import com.winterscheidt.hungergames.Classes.Game.GameAction;
 import com.winterscheidt.hungergames.Classes.Items.Item;
 import com.winterscheidt.hungergames.Classes.Items.Weapon;
-import com.winterscheidt.hungergames.Classes.Utils.Inventory;
-import com.winterscheidt.hungergames.Interfaces.Aggressive;
+import com.winterscheidt.hungergames.Utils.Helpers;
+import com.winterscheidt.hungergames.Utils.Inventory;
+import com.winterscheidt.hungergames.Interfaces.Killer;
 import com.winterscheidt.hungergames.Interfaces.Attainable;
 import com.winterscheidt.hungergames.Interfaces.Equippable;
 import com.winterscheidt.hungergames.Interfaces.Usable;
 
-public class Player extends Entity implements Aggressive {
+public class Player extends Entity implements Killer {
     // Fields
     private Inventory inventory = new Inventory();
-    private double hunger = 1;
-    private double thirst = 1;
+    private int district = (int) (Math.random() * 12 + 1);
     private Equippable equippedItem;
+
+    // Attributes
     private double aggression = 1;
     private double smarts = 1;
     private double strength = 1;
+    private double lithe = 1;
+
+    // Modifiers / Data
+    private double hunger = 0;
+    private double thirst = 0;
 
     // Getters
     public Inventory getInventory() {
@@ -35,13 +42,31 @@ public class Player extends Entity implements Aggressive {
     public Item getEquipped() {
         return (Item) this.equippedItem;
     }
+    public double getObscurity() {
+        return this.obscurity;
+    }
+    public double getPerception() {
+        return this.perception;
+    }
 
     // Setters / Adders
     public void addHunger(double hunger) {
-        this.hunger = Math.max(0, Math.min(1, this.hunger + hunger));
+        this.hunger = Helpers.clamp(this.hunger + hunger, 0, 1);
     }
     public void addThirst(double thirst) {
-        this.thirst = Math.max(0, Math.min(1, this.thirst + thirst));
+        this.thirst = Helpers.clamp(this.thirst + thirst, 0, 1);
+    }
+    public void setObscurity(double obscurity) {
+        this.obscurity = obscurity;
+    }
+    public void lerpObscurity(double amount) {
+        this.obscurity = Helpers.lerp(this.obscurity, amount);
+    }
+    public void setPerception(double perception) {
+        this.perception = perception;
+    }
+    public void lerpPerception(double amount) {
+        this.perception = Helpers.lerp(this.perception, amount);
     }
 
     // Methods
@@ -81,5 +106,19 @@ public class Player extends Entity implements Aggressive {
             return true;
         }
         return false;
+    }
+
+    // Game Management
+    public void turnStart(Game game) {
+        this.obscurity = this.location.getBaseObscurity();
+        this.perception = this.smarts - 1;
+
+        if (this.hunger >= 0.8) {
+            this.addHealth(-0.05, game, );
+        }
+    }
+    public void turnEnd(Game game) {
+        this.hunger += 0.05;
+        this.thirst += 0.05;
     }
 }
