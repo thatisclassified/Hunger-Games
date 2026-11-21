@@ -119,8 +119,8 @@ public class Game implements Serializable {
             if (!entity.isAI()) {
                 actions.add(new GameAction("Look Around", false, null));
             }
-            actions.add(new GameAction("Move...", false, 
-            () -> openMenu(getMoveActions(player))));
+            actions.add(new GameAction("Move...", false, // This should check canMove(),
+            () -> openMenu(getMoveActions(player)))); // and be available for all entities
             if (!entity.isAI()) {
                 actions.add(new GameAction("Inspect...", false, 
                 () -> openMenu(getInspectActions(player))));
@@ -129,9 +129,17 @@ public class Game implements Serializable {
             () -> openMenu(getInteractActions(player))));
             actions.add(new GameAction("Use / Equip...", false, 
             () -> openMenu(getInventoryActions(player))));
-            actions.add(new GameAction("Attack...", false, 
+            actions.add(new GameAction("Attack...", false, // Same with attack and hide
             () -> openMenu(getEntityActions(player))));
-            actions.add(new GameAction("Rest", true, null));
+            actions.add(new GameAction("Rest", true, () -> {
+                player.lerpObscurity(0.2);
+                player.addHunger(-0.02);
+                player.addThirst(-0.02);
+                player.addHealth(0.03);
+            }));
+            actions.add(new GameAction("Hide", true, 
+            () -> player.lerpObscurity(0.7)));
+            
         }
         return actions;
     }
