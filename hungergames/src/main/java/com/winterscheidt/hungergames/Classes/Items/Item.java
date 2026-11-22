@@ -14,6 +14,10 @@ public abstract class Item implements Inspectable, Serializable {
     protected boolean bePickedUp = true;
 
     // Constructors
+    public Item(String name, String description) {
+        this.name = name;
+        this.description = description;
+    }
 
     // Methods
     public String getName() {

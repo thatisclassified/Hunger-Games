@@ -19,7 +19,7 @@ public class Inventory {
         return this.inventory.size();
     }
     public int getMaxSize() {
-        return this.maxSize();
+        return this.maxSize;
     }
     public void setMaxSize(int maxSize) {
         if (maxSize >= 0) {

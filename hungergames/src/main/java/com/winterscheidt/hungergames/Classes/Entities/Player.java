@@ -6,6 +6,8 @@ import com.winterscheidt.hungergames.Classes.Game.Game;
 import com.winterscheidt.hungergames.Classes.Game.GameAction;
 import com.winterscheidt.hungergames.Classes.Items.Item;
 import com.winterscheidt.hungergames.Classes.Items.Weapon;
+import com.winterscheidt.hungergames.Utils.CauseOfDeath;
+import com.winterscheidt.hungergames.Utils.Gender;
 import com.winterscheidt.hungergames.Utils.Helpers;
 import com.winterscheidt.hungergames.Utils.Inventory;
 import com.winterscheidt.hungergames.Interfaces.Killer;
@@ -14,6 +16,10 @@ import com.winterscheidt.hungergames.Interfaces.Equippable;
 import com.winterscheidt.hungergames.Interfaces.Usable;
 
 public class Player extends Entity implements Killer {
+    // Static Constants
+    private static final double NUTRITION_THRESHOLD = 0.8;
+    private static final double NUTRITION_DAMAGE = 0.8;
+
     // Fields
     private Inventory inventory = new Inventory();
     private int district = (int) (Math.random() * 12 + 1);
@@ -42,12 +48,6 @@ public class Player extends Entity implements Killer {
     public Item getEquipped() {
         return (Item) this.equippedItem;
     }
-    public double getObscurity() {
-        return this.obscurity;
-    }
-    public double getPerception() {
-        return this.perception;
-    }
 
     // Setters / Adders
     public void addHunger(double hunger) {
@@ -55,18 +55,6 @@ public class Player extends Entity implements Killer {
     }
     public void addThirst(double thirst) {
         this.thirst = Helpers.clamp(this.thirst + thirst, 0, 1);
-    }
-    public void setObscurity(double obscurity) {
-        this.obscurity = obscurity;
-    }
-    public void lerpObscurity(double amount) {
-        this.obscurity = Helpers.lerp(this.obscurity, amount);
-    }
-    public void setPerception(double perception) {
-        this.perception = perception;
-    }
-    public void lerpPerception(double amount) {
-        this.perception = Helpers.lerp(this.perception, amount);
     }
 
     // Methods
@@ -112,13 +100,40 @@ public class Player extends Entity implements Killer {
     public void turnStart(Game game) {
         this.obscurity = this.location.getBaseObscurity();
         this.perception = this.smarts - 1;
+        this.canMove = true;
 
-        if (this.hunger >= 0.8) {
-            this.addHealth(-0.05, game, );
+        if (this.hunger >= NUTRITION_THRESHOLD) {
+            this.addHealth(-NUTRITION_DAMAGE, game, CauseOfDeath.HUNGER);
+        }
+        if (this.thirst >= NUTRITION_THRESHOLD) {
+            this.addHealth(-NUTRITION_DAMAGE, game, CauseOfDeath.THIRST);
         }
     }
     public void turnEnd(Game game) {
         this.hunger += 0.05;
         this.thirst += 0.05;
+    }
+
+    public void die(Game game, Killer cause) {
+        // Need to implement this further
+        this.description = cause.getKillDescription(this);
+    }
+
+    public String getKillMessage(Entity entity) {
+        if (this.equippedItem instanceof Killer) {
+            return ((Killer) this.equippedItem).getKillMessage(entity);
+        } else {
+            return entity.getName() + " was beaten to death by " + this.name;
+        }
+    }
+    public String getKillDescription(Entity entity) {
+        if (this.equippedItem instanceof Killer) {
+            return ((Killer) this.equippedItem).getKillDescription(entity);
+        } else {
+            Gender g = entity.getGender();
+            return entity.getName() + " lies limp on the ground. " + 
+                g.capPossessive() + " body is heavily bruised, as if " +
+                g.object() + " had a hand-to-hand struggle.";
+        }
     }
 }

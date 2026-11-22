@@ -21,7 +21,7 @@ public abstract class Entity implements Inspectable, Serializable {
     protected double perception;
     protected Gender gender;
 
-    // Methods
+    // Getters and Setters
     public String getName() {
         return this.name;
     }
@@ -35,7 +35,7 @@ public abstract class Entity implements Inspectable, Serializable {
         return this.perception;
     }
     public boolean isAI() {
-        return isAI();
+        return this.AI;
     }
     public Location getLocation() {
         return this.location;
@@ -43,9 +43,27 @@ public abstract class Entity implements Inspectable, Serializable {
     public Gender getGender() {
         return this.gender;
     }
+    public boolean canMove() {
+        return this.canMove;
+    }
+    public void setObscurity(double obscurity) {
+        this.obscurity = obscurity;
+    }
+    public void lerpObscurity(double amount) {
+        this.obscurity = Helpers.lerp(this.obscurity, amount);
+    }
+    public void setPerception(double perception) {
+        this.perception = perception;
+    }
+    public void lerpPerception(double amount) {
+        this.perception = Helpers.lerp(this.perception, amount);
+    }
+
+    // Movement Methods
     public boolean move(String location) {
         if (this.location.getConnections().containsKey(location)) {
             this.location = this.location.getConnection(location);
+            this.canMove = false;
             return true;
         }
         return false;
@@ -53,10 +71,13 @@ public abstract class Entity implements Inspectable, Serializable {
     public boolean move(Location location) {
         if (this.location.getConnections().containsValue(location)) {
             this.location = location;
+            this.canMove = false;
             return true;
         }
         return false;
     }
+
+    // Health Methods
     public double getHealth() {
         return this.health;
     }
@@ -75,8 +96,6 @@ public abstract class Entity implements Inspectable, Serializable {
 
     // Game Managers
     public abstract void die(Game game, Killer cause);
-
-    public abstract void turnActions(Game game);
     public abstract void turnStart(Game game);
     public abstract void turnEnd(Game game);
 }

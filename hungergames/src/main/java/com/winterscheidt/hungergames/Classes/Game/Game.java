@@ -99,7 +99,7 @@ public class Game implements Serializable {
         return actions;
     }
 
-    public List<GameAction> getEntityActions(Player entity) {
+    public List<GameAction> getEntityActions(Entity entity) {
         List<GameAction> actions = new ArrayList<>();
         Location entLoc = entity.getLocation();
         for (Entity ent2 : entities) {
@@ -114,13 +114,21 @@ public class Game implements Serializable {
 
     public List<GameAction> getMainActions(Entity entity) {
         List<GameAction> actions = new ArrayList<>();
-        if (entity instanceof Player) {
-            Player player = (Player) entity;
-            if (!entity.isAI()) {
-                actions.add(new GameAction("Look Around", false, null));
-            }
+        Player player = entity instanceof Player ? (Player) entity : null;
+
+        // LOOK AROUND
+        if (player != null && !entity.isAI()) {
+            actions.add(new GameAction("Look Around", false, null));
+        }
+
+        // MOVE
+        if (entity.canMove()) {
             actions.add(new GameAction("Move...", false, // This should check canMove(),
-            () -> openMenu(getMoveActions(player)))); // and be available for all entities
+            () -> openMenu(getMoveActions(entity)))); // and be available for all entities
+        }
+
+        // INSPECT
+        if (player != null) { 
             if (!entity.isAI()) {
                 actions.add(new GameAction("Inspect...", false, 
                 () -> openMenu(getInspectActions(player))));
@@ -129,18 +137,26 @@ public class Game implements Serializable {
             () -> openMenu(getInteractActions(player))));
             actions.add(new GameAction("Use / Equip...", false, 
             () -> openMenu(getInventoryActions(player))));
-            actions.add(new GameAction("Attack...", false, // Same with attack and hide
-            () -> openMenu(getEntityActions(player))));
-            actions.add(new GameAction("Rest", true, () -> {
-                player.lerpObscurity(0.2);
+        }
+            
+        // ATTACK
+        actions.add(new GameAction("Attack...", false, // Same with attack and hide
+        () -> openMenu(getEntityActions(entity))));
+        
+        // REST
+        actions.add(new GameAction("Rest", true, () -> {
+            entity.lerpObscurity(0.2);
+            entity.addHealth(0.03);
+            if (player != null) {
                 player.addHunger(-0.02);
                 player.addThirst(-0.02);
-                player.addHealth(0.03);
-            }));
-            actions.add(new GameAction("Hide", true, 
-            () -> player.lerpObscurity(0.7)));
-            
-        }
+            }
+        }));
+
+        // HIDE
+        actions.add(new GameAction("Hide", true, 
+        () -> entity.lerpObscurity(0.7)));
+
         return actions;
     }
 }

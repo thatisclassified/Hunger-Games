@@ -6,6 +6,9 @@ import java.util.List;
 import com.winterscheidt.hungergames.Interfaces.Interactable;
 import com.winterscheidt.hungergames.Utils.Inventory;
 
-public class Container extends Item implements Interactable {
-    private Inventory inventory;
+public class Container {
+    // Stub; see below
 }
+// public class Container extends Item implements Interactable {
+//     private Inventory inventory;
+// }
