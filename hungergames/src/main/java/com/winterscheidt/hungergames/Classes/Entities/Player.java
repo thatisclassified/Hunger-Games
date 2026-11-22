@@ -60,8 +60,10 @@ public class Player extends Entity implements Killer {
     // Methods
     public boolean takeItem(Item item) {
         // Check if item is attainable
-        if (item instanceof Attainable) {
-            return this.inventory.addItem(item);
+        if (item instanceof Attainable && this.inventory.getSize() < this.inventory.getMaxSize()) {
+            this.location.getItems().remove(item);
+            this.inventory.addItem(item);
+            return true;
         }
         return false;
     }

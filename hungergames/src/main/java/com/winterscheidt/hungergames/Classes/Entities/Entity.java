@@ -62,15 +62,16 @@ public abstract class Entity implements Inspectable, Serializable {
     // Movement Methods
     public boolean move(String location) {
         if (this.location.getConnections().containsKey(location)) {
-            this.location = this.location.getConnection(location);
-            this.canMove = false;
+            this.move(this.location.getConnections().get(location));
             return true;
         }
         return false;
     }
     public boolean move(Location location) {
         if (this.location.getConnections().containsValue(location)) {
+            this.obscurity -= this.location.getBaseObscurity();
             this.location = location;
+            this.obscurity += this.location.getBaseObscurity();
             this.canMove = false;
             return true;
         }

@@ -6,7 +6,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.winterscheidt.hungergames.Classes.Entities.Entity;
 import com.winterscheidt.hungergames.Classes.Items.Item;
+import com.winterscheidt.hungergames.Utils.DetectionLevel;
 
 public class Location implements Serializable {
     private String name;
@@ -87,6 +89,34 @@ public class Location implements Serializable {
     }
     public double getBaseObscurity() {
         return this.baseObscurity;
+    }
+    public String getFullDescription(Game game) {
+        String result = " --- " + this.getName() + " --- \n" + 
+        this.getDescription() + "\n";
+        if (this.items.size() > 0) {
+            result += "You see the following items: \n";
+            for (Item item : this.items) {
+                result += " - " + item.getName() + "\n";
+            }
+        }
+        boolean entities = false;
+        for (Entity entity : game.getEntities()) {
+            if (entity.getLocation() == this) {
+                DetectionLevel detection = game.getDetection(game.getCurrentEntity(), entity);
+                if (detection != DetectionLevel.HIDDEN) {
+                    if (!entities) {
+                        result += "You see the following creatures: \n";
+                        entities = true;
+                    }
+                    if (detection == DetectionLevel.RECOGNIZED) {
+                        result += " - " + entity.getName();
+                    } else { // SPOTTED
+                        result += " - Obscured Figure";
+                    }
+                }
+            }
+        }
+        return result;
     }
 
     // And setters

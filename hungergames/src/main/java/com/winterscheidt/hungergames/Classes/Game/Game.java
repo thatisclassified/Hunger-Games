@@ -11,6 +11,7 @@ import com.winterscheidt.hungergames.Classes.Entities.Player;
 import com.winterscheidt.hungergames.Classes.Items.Item;
 import com.winterscheidt.hungergames.Interfaces.Attainable;
 import com.winterscheidt.hungergames.Interfaces.Equippable;
+import com.winterscheidt.hungergames.Interfaces.GameIO;
 import com.winterscheidt.hungergames.Interfaces.Interactable;
 import com.winterscheidt.hungergames.Interfaces.Usable;
 import com.winterscheidt.hungergames.Utils.DetectionLevel;
@@ -19,13 +20,22 @@ public class Game implements Serializable {
     private List<Location> locations = new ArrayList<>();
     private List<Entity> entities = new ArrayList<>();
     private List<GameAction> currentMenu;
+    private Entity currentEntity;
+    private GameIO io = ConsoleIO.io;
 
     public void openMenu(List<GameAction> menu) {
         this.currentMenu = menu;
-        // Notify your UI/Discord listener to render 'currentMenu'
+        io.displayMenu(currentMenu);
     }
 
-    public DetectionLevel checkDetection(Entity observer, Entity target) {
+    public List<Entity> getEntities() {
+        return this.entities;
+    }
+    public Entity getCurrentEntity() {
+        return this.currentEntity;
+    }
+
+    public DetectionLevel getDetection(Entity observer, Entity target) {
         // Roll perception: base perception + random roll (e.g., 0.0 to 1.0)
         double roll = observer.getPerception() + Math.random(); 
         double effectiveObscurity = Math.min(0.95, target.getObscurity());
@@ -42,13 +52,41 @@ public class Game implements Serializable {
     }
 
 
+    // TURN MANAGERS
+    public void startTurn(Entity entity) {
+        this.currentEntity = entity;
+        entity.turnStart(this);
+        io.broadcast("It's your turn, " + entity.getName(), entity);
+        openMenu(getMainActions(entity));
+    }
+
+    public void runAction(int index) {
+        runAction(currentMenu.get(index));
+    }
+    public void runAction(GameAction action) {
+        action.execute();
+        if (currentEntity.getHealth() <= 0 || action.endsTurn()) {
+            endTurn();
+        } else {
+            openMenu(getMainActions(currentEntity));
+        }
+    }
+
+    public void endTurn() {
+        currentEntity.turnEnd(this);
+    }
+
+
     // MENU DEFINITIONS
 
     public List<GameAction> getMoveActions(Entity entity) {
         List<GameAction> actions = new ArrayList<>();
         for (String locName : entity.getLocation().getConnections().keySet()) {
-            actions.add(new GameAction("Move: " + locName, true,
-            () -> entity.move(locName)));
+            actions.add(new GameAction("Move: " + locName, false,
+            () -> {
+                entity.move(locName);
+                io.broadcast("Moved to " + locName + ".", entity);
+            }));
         }
         actions.add(new GameAction("Back", false, () -> openMenu(getMainActions(entity))));
         return actions;
@@ -58,7 +96,8 @@ public class Game implements Serializable {
         List<GameAction> actions = new ArrayList<>();
         if (!entity.isAI()) {
             for (Item item : entity.getLocation().getItems()) {
-                actions.add(new GameAction("Inspect " + item.getName(), false, null));
+                actions.add(new GameAction("Inspect " + item.getName(), false, 
+                () -> io.broadcast(item.getDescription())));
             }
         }
         actions.add(new GameAction("Back", false, () -> openMenu(getMainActions(entity))));
@@ -69,10 +108,14 @@ public class Game implements Serializable {
         List<GameAction> actions = new ArrayList<>();
         for (Item item : entity.getLocation().getItems()) {
             if (item instanceof Attainable) {
-                actions.add(new GameAction("Pick up " + item.getName(), true, null));
+                actions.add(new GameAction("Pick up " + item.getName(), true, () -> {
+                    entity.takeItem(item);
+                    io.broadcast("Took " + item.getName() + ".", entity);
+                }));
             }
             if (item instanceof Interactable) {
-                actions.add(new GameAction("Interact with " + item.getName(), true, null));
+                actions.add(new GameAction("Interact with " + item.getName(), true, () -> 
+                ((Interactable) item).interact(entity, this)));
             }
         }
         actions.add(new GameAction("Back", false, () -> openMenu(getMainActions(entity))));
@@ -83,12 +126,18 @@ public class Game implements Serializable {
         List<GameAction> actions = new ArrayList<>();
         if (entity.getEquipped() != null && entity.getInventory().getSize() < entity.getInventory().getMaxSize()) {
             actions.add(new GameAction("Unequip " + entity.getEquipped().getName(), false, 
-            () -> entity.unequipItem()));
+            () -> { 
+                entity.unequipItem(); 
+                io.broadcast(entity.getEquipped().getName() + " unequipped.", entity); 
+            }));
         }
         for (Item item : entity.getInventory().getItems()) {
             if (item instanceof Equippable) {
                 actions.add(new GameAction("Equip " + item.getName(), false, 
-                () -> entity.equipItem(item)));
+                () -> { 
+                    entity.equipItem(item); 
+                    io.broadcast(item.getName() + " equipped.", entity); 
+                }));
             }
             if (item instanceof Usable) {
                 actions.add(new GameAction("Use " + item.getName(), false,
@@ -104,7 +153,12 @@ public class Game implements Serializable {
         Location entLoc = entity.getLocation();
         for (Entity ent2 : entities) {
             if (ent2 != entity && ent2.getLocation() == entLoc) {
-                actions.add(new GameAction("Attack " + ent2.getName(), true, null));
+                DetectionLevel detection = getDetection(entity, ent2);
+                if (detection == DetectionLevel.RECOGNIZED) {
+                    actions.add(new GameAction("Attack " + ent2.getName(), true, null));
+                } else if (detection == DetectionLevel.SPOTTED) {
+                    actions.add(new GameAction("Attack Obscured Figure", true, null));
+                }
                 // Might add some more actions later, ie, talk()
             }
         }
@@ -118,7 +172,8 @@ public class Game implements Serializable {
 
         // LOOK AROUND
         if (player != null && !entity.isAI()) {
-            actions.add(new GameAction("Look Around", false, null));
+            actions.add(new GameAction("Look Around", false, 
+            () -> io.broadcast(player.getLocation().getFullDescription(this), entity)));
         }
 
         // MOVE
@@ -155,7 +210,10 @@ public class Game implements Serializable {
 
         // HIDE
         actions.add(new GameAction("Hide", true, 
-        () -> entity.lerpObscurity(0.7)));
+        () -> {
+            entity.lerpObscurity(0.7);
+            io.broadcast("Hidden.", entity);
+        }));
 
         return actions;
     }
