@@ -30,6 +30,7 @@ public class Game implements Serializable {
     // Getters
     public void openMenu(List<GameAction> menu) {
         this.currentMenu = menu;
+        System.out.println("[DEBUG] Active Entity: " + currentEntity.getName() + " | Location: " + currentEntity.getLocation().getName());
         //io.displayMenu(currentMenu);
     }
     public List<Entity> getEntities() {
@@ -170,7 +171,8 @@ public class Game implements Serializable {
     }
 
     public List<GameAction> getInventoryActions(Player entity) {
-//        io.broadcast("ITEMS: " + entity.getInventory().getItems());
+        // This is empty until I add a second item:
+        // io.broadcast("ITEMS: " + entity.getInventory().getItems());
         List<GameAction> actions = new ArrayList<>();
         if (entity.getEquipped() != null && entity.getInventory().getSize() < entity.getInventory().getMaxSize()) {
             actions.add(new GameAction("Unequip " + entity.getEquipped().getName(), false, false,
@@ -196,7 +198,7 @@ public class Game implements Serializable {
                     if (entity.useItem(item, this)) {
                         io.broadcast("Used " + item.getName(), entity);
                     }
-                })); // Should this be passing in a game?
+                }));
             }
         }
         actions.add(new GameAction("Back", false, true, () -> openMenu(getMainActions(entity))));

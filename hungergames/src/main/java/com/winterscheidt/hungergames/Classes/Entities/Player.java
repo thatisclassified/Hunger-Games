@@ -12,6 +12,7 @@ import com.winterscheidt.hungergames.Utils.DetectionLevel;
 import com.winterscheidt.hungergames.Utils.Gender;
 import com.winterscheidt.hungergames.Utils.Helpers;
 import com.winterscheidt.hungergames.Utils.Inventory;
+import com.winterscheidt.hungergames.Utils.Nutrition;
 import com.winterscheidt.hungergames.Interfaces.Killer;
 import com.winterscheidt.hungergames.Interfaces.Attainable;
 import com.winterscheidt.hungergames.Interfaces.Equippable;
@@ -19,8 +20,6 @@ import com.winterscheidt.hungergames.Interfaces.Usable;
 
 public class Player extends Entity implements Killer {
     // Static Constants
-    private static final double NUTRITION_THRESHOLD = 0.8;
-    private static final double NUTRITION_DAMAGE = 0.05;
     private static final double MELEE_DAMAGE = 0.08;
     private static final double MELEE_ACCURACY = 0.9;
 
@@ -116,11 +115,33 @@ public class Player extends Entity implements Killer {
         this.perception = this.smarts - 1;
         this.perceptionMod = Math.random();
 
-        if (this.hunger >= NUTRITION_THRESHOLD) {
-            this.addHealth(-NUTRITION_DAMAGE, game, CauseOfDeath.HUNGER);
+        Nutrition hungerState = Nutrition.getHunger(hunger);
+        Nutrition thirstState = Nutrition.getThirst(thirst);
+
+        switch(hungerState) {
+            case HUNGRY:
+                game.getIO().broadcast("You're starting to get hungry.", this);
+                break;
+            case VERY_HUNGRY:
+                game.getIO().broadcast("Your stomach growls. You haven't eaten in a while...", this);
+                break;
+            case STARVING:
+                game.getIO().broadcast("You're starving.", this);
+                this.addHealth(-Nutrition.HUNGER_DAMAGE, game, CauseOfDeath.HUNGER);
+                break;
         }
-        if (this.thirst >= NUTRITION_THRESHOLD) {
-            this.addHealth(-NUTRITION_DAMAGE, game, CauseOfDeath.THIRST);
+
+        switch(thirstState) {
+            case THIRSTY:
+                game.getIO().broadcast("You're starting to get thirsty.", this);
+                break;
+            case VERY_THIRSTY:
+                game.getIO().broadcast("Your throat is burning. You haven't had water in a while...", this);
+                break;
+            case PARCHED:
+                game.getIO().broadcast("You're dying of thirst.", this);
+                this.addHealth(-Nutrition.THIRST_DAMAGE, game, CauseOfDeath.THIRST);
+                break;
         }
     }
     public void turnEnd(Game game) {
