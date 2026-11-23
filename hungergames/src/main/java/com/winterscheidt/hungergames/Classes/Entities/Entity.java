@@ -7,7 +7,10 @@ import com.winterscheidt.hungergames.Utils.Gender;
 import com.winterscheidt.hungergames.Utils.Helpers;
 
 import java.io.Serializable;
+import java.util.List;
+
 import com.winterscheidt.hungergames.Classes.Game.Game;
+import com.winterscheidt.hungergames.Classes.Game.GameAction;
 import com.winterscheidt.hungergames.Classes.Game.Location;
 
 public abstract class Entity implements Inspectable, Serializable {
@@ -20,8 +23,8 @@ public abstract class Entity implements Inspectable, Serializable {
     protected boolean canMove = true;
     protected double agility = 1;
     protected double obscurity = 0;
-    protected double perception;
-    protected Gender gender;
+    protected double perception = 0;
+    protected Gender gender = Gender.randomGender();
 
     // Getters and Setters
     public String getName() {
@@ -119,6 +122,7 @@ public abstract class Entity implements Inspectable, Serializable {
     public abstract void die(Game game, Killer cause);
     public abstract void turnStart(Game game);
     public abstract void turnEnd(Game game);
+    public abstract GameAction chooseAction(List<GameAction> actions);
 
     public abstract double attack(Entity entity, Game game);
 }

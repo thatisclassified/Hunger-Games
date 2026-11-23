@@ -90,7 +90,7 @@ public class Location implements Serializable {
     public double getBaseObscurity() {
         return this.baseObscurity;
     }
-    public String getFullDescription(Game game) {
+    public String getFullDescription(Game game, Entity requester) {
         String result = " --- " + this.getName() + " --- \n" + 
         this.getDescription() + "\n";
         if (this.items.size() > 0) {
@@ -101,7 +101,7 @@ public class Location implements Serializable {
         }
         boolean entities = false;
         for (Entity entity : game.getEntities()) {
-            if (entity.getLocation() == this) {
+            if (entity.getLocation() == this && entity != requester) {
                 DetectionLevel detection = game.getCurrentEntity().getDetection(entity);
                 if (detection != DetectionLevel.HIDDEN) {
                     if (!entities) {
@@ -109,9 +109,9 @@ public class Location implements Serializable {
                         entities = true;
                     }
                     if (detection == DetectionLevel.RECOGNIZED) {
-                        result += " - " + entity.getName();
+                        result += " - " + entity.getName() + "\n";
                     } else { // SPOTTED
-                        result += " - Obscured Figure";
+                        result += " - Obscured Figure" + "\n";
                     }
                 }
             }

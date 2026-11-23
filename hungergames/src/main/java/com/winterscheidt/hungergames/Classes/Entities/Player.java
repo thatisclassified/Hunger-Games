@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.winterscheidt.hungergames.Classes.Game.Game;
 import com.winterscheidt.hungergames.Classes.Game.GameAction;
+import com.winterscheidt.hungergames.Classes.Game.Location;
 import com.winterscheidt.hungergames.Classes.Items.Item;
 import com.winterscheidt.hungergames.Classes.Items.Weapon;
 import com.winterscheidt.hungergames.Utils.CauseOfDeath;
@@ -36,6 +37,15 @@ public class Player extends Entity implements Killer {
     // Modifiers / Data
     private double hunger = 0;
     private double thirst = 0;
+
+    // Cosntructors
+    // Later I want some static arrays to randomize this
+    public Player(String name, String description, boolean AI, Location location) {
+        this.name = name;
+        this.description = description;
+        this.AI = AI;
+        this.location = location;
+    }
 
     // Getters
     public Inventory getInventory() {
@@ -118,12 +128,14 @@ public class Player extends Entity implements Killer {
         this.canMove = true;
     }
 
+    @Override
     public void die(Game game, Killer cause) {
         // Need to implement this further
         this.description = cause.getKillDescription(this);
         game.getIO().broadcast("BOOM!");
     }
 
+    @Override
     public String getKillMessage(Entity entity) {
         if (this.equippedItem instanceof Killer) {
             return ((Killer) this.equippedItem).getKillMessage(entity);
@@ -131,6 +143,8 @@ public class Player extends Entity implements Killer {
             return entity.getName() + " was beaten to death by " + this.name;
         }
     }
+
+    @Override
     public String getKillDescription(Entity entity) {
         if (this.equippedItem instanceof Killer) {
             return ((Killer) this.equippedItem).getKillDescription(entity);
@@ -167,5 +181,10 @@ public class Player extends Entity implements Killer {
         entity.addHealth(-finalDamage, game, this);
 
         return finalDamage;
+    }
+
+    @Override
+    public GameAction chooseAction(List<GameAction> actions) {
+        return actions.get((int) (Math.random() * actions.size()));
     }
 }

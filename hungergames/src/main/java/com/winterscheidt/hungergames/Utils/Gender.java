@@ -3,7 +3,8 @@ package com.winterscheidt.hungergames.Utils;
 public enum Gender {
     MALE("he", "him", "his", "himself"),
     FEMALE("she", "her", "hers", "herself"),
-    NON_BINARY("they", "them", "theirs", "themselves");
+    NON_BINARY("they", "them", "theirs", "themselves"),
+    CREATURE("it", "it", "its", "itself");
 
     private final String subject;    // he / she / they
     private final String object;     // him / her / them
@@ -15,6 +16,18 @@ public enum Gender {
         this.object = object;
         this.possessive = possessive;
         this.reflexive = reflexive;
+    }
+
+    public static Gender randomGender() {
+        // Depending on audience... This may get changed to just Male / Female
+        double rand = Math.random();
+        if (rand <= 0.33) {
+            return MALE;
+        } else if (rand <= 0.66) {
+            return FEMALE;
+        } else {
+            return NON_BINARY;
+        }
     }
 
     public String capSubject() { 

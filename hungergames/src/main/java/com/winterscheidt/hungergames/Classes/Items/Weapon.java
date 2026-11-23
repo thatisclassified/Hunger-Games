@@ -16,7 +16,7 @@ public class Weapon extends Item implements Equippable, Attainable, Killer {
     private final Function<Entity, String> messageGenerator;
     private final Function<Entity, String> descriptionGenerator;
 
-    Weapon(String name, String description, double damage, double accuracy, int uses,
+    public Weapon(String name, String description, double damage, double accuracy, int uses,
         Function<Entity, String> messageGenerator,
         Function<Entity, String> descriptionGenerator
     ) {

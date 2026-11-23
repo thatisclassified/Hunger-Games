@@ -24,8 +24,11 @@ public class ConsoleIO implements GameIO {
 
     @Override
     public void displayMenu(List<GameAction> items) {
+        int i = 1;
+        System.out.println();
         for (GameAction item : items) {
-            System.out.println(item.getName());
+            System.out.println(i + ": " + item.getName());
+            i++;
         }
     }
 
