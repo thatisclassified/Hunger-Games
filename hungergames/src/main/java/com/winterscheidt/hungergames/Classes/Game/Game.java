@@ -70,8 +70,6 @@ public class Game implements Serializable {
         while (!this.gameOver) {
             currentEntity = entities.get(currentEntityIndex);
             currentEntity.turnStart(this);
-            io.broadcast("\n" + currentEntity.getName() + " is at " + 
-            Helpers.convertPercent(currentEntity.getHealth()) + " health.");
             if (currentEntity.getHealth() > 0) {
                 openMenu(getMainActions(currentEntity));
 
@@ -79,6 +77,8 @@ public class Game implements Serializable {
                     startChoice();
                 } else {            
                     io.broadcast("It's your turn, " + currentEntity.getName(), currentEntity);
+                    io.broadcast("You have " + Helpers.convertPercent(currentEntity.getHealth()) + 
+                    " health.", currentEntity);
                     startChoice();
                     return;
                 }

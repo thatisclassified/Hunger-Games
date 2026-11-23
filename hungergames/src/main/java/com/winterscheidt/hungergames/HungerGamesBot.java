@@ -22,9 +22,9 @@ public class HungerGamesBot extends ListenerAdapter {
 
     public static void main(String[] args) throws InterruptedException {
         // Store your bot token in an environment variable or paste it here temporarily for local testing
-        String token = System.getenv("DISCORD_BOT_TOKEN");
+        String token = System.getenv(BotData.BOT_TOKEN);
         if (token == null || token.isBlank()) {
-            token = "YOUR_BOT_TOKEN_HERE";
+            token = BotData.BOT_TOKEN;
         }
 
         HungerGamesBot bot = new HungerGamesBot();
