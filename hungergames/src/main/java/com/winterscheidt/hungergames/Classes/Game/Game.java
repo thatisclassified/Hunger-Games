@@ -30,8 +30,6 @@ public class Game implements Serializable {
     // Getters
     public void openMenu(List<GameAction> menu) {
         this.currentMenu = menu;
-        System.out.println("[DEBUG] Active Entity: " + currentEntity.getName() + " | Location: " + currentEntity.getLocation().getName());
-        //io.displayMenu(currentMenu);
     }
     public List<Entity> getEntities() {
         return this.entities;
@@ -105,7 +103,7 @@ public class Game implements Serializable {
 
     public void startChoice() {
         if (currentEntity.isAI()) {
-            GameAction choice = currentEntity.chooseAction(currentMenu);
+            GameAction choice = currentEntity.chooseAction(currentMenu, this);
             runAction(choice);
         } else {
             io.displayMenu(currentMenu, currentEntity);

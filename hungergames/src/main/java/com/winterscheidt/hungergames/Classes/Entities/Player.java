@@ -40,10 +40,25 @@ public class Player extends Entity implements Killer {
     // Cosntructors
     // Later I want some static arrays to randomize this
     public Player(String name, String description, boolean AI, Location location) {
+        this(name, description, AI, location, (int) (Math.random() * 12 + 1), Gender.randomGender(), 
+        0.75 + Math.random() / 2, 0.75 + Math.random() / 2, 0.75 + Math.random() / 2);
+    }
+    public Player(String name, boolean AI, Location location, Gender gender) {
+        this(name, gender.subject() + " looks healthy.", AI, location, (int) (Math.random() * 12 + 1), gender, 
+         0.75 + Math.random() / 2, 0.75 + Math.random() / 2, 0.75 + Math.random() / 2);
+        
+    }
+    // And one for all the attributes
+    public Player(String name, String description, boolean AI, Location location, int district, Gender gender, double aggression, double smarts, double strength) {
         this.name = name;
         this.description = description;
         this.AI = AI;
         this.location = location;
+        this.district = district;
+        this.gender = gender;
+        this.aggression = aggression;
+        this.smarts = smarts;
+        this.strength = strength;
     }
 
     // Getters
@@ -206,8 +221,83 @@ public class Player extends Entity implements Killer {
         return finalDamage;
     }
 
+    // Courtesy of Gemini
     @Override
-    public GameAction chooseAction(List<GameAction> actions) {
-        return actions.get((int) (Math.random() * actions.size()));
+    public GameAction chooseAction(List<GameAction> actions, Game game) {
+        if (actions.size() == 1) {
+            return actions.get(0); // Only one choice (e.g., "Back")
+        }
+
+        GameAction bestAction = actions.get(0);
+        double bestScore = -1.0;
+
+        for (GameAction action : actions) {
+            double score = scoreAction(action, game);
+            if (score > 0) {
+                // Add slight randomness (0 to 15) so tributes aren't 100% predictable
+                score += Math.random() * 15.0;
+            }
+            if (score > bestScore) {
+                bestScore = score;
+                bestAction = action;
+            }
+        }
+        return bestAction;
+    }
+
+    @Override
+    protected double scoreAction(GameAction action, Game game) {
+        String label = action.getName();
+
+        if (label.equals("Back")) {
+            return 0.0;
+        }
+        if (label.startsWith("Unequip")) {
+            return 0.0;
+        }
+        if (label.startsWith("Equip")) {
+            return (this.equippedItem == null) ? 85.0 : 15.0;
+        }
+        if (label.startsWith("Use")) {
+            double urgency = (1.0 - this.health) * 80.0 + (this.hunger * 50.0) + (this.thirst * 50.0);
+            return (urgency > 25.0) ? urgency : 5.0;
+        }
+        if (label.equals("Use / Equip...")) {
+            if (this.inventory.getSize() == 0) return 0.0;
+            if (this.equippedItem == null) return 85.0;
+            return ((1.0 - this.health) > 0.3 || this.hunger > 0.5 || this.thirst > 0.5) ? 65.0 : 5.0;
+        }
+        if (label.equals("Pick Up / Interact...") || label.startsWith("Pick up") || label.startsWith("Interact")) {
+            if (this.location.getItems().isEmpty() || this.inventory.getSize() >= this.inventory.getMaxSize()) {
+                return 0.0;
+            }
+            return (this.equippedItem == null) ? 75.0 : 40.0;
+        }
+        if (label.equals("Attack...") || label.startsWith("Attack ")) {
+            boolean hasTarget = false;
+            for (Entity entity : game.getEntities()) {
+                if (entity.getLocation() == this.location && entity != this) {
+                    hasTarget = true;
+                    break;
+                }
+            }
+            if (!hasTarget) return 0.0;
+            double score = 20.0 + (this.aggression * 45.0) - ((1.0 - this.health) * 50.0);
+            if (this.equippedItem != null) score += 25.0;
+            return Math.max(5.0, score);
+        }
+        if (label.equals("Move...") || label.startsWith("Move ")) {
+            double score = 25.0 + ((1.0 - this.health) * 45.0) + ((1.0 - this.aggression) * 15.0);
+            if (this.location.getItems().isEmpty()) score += 15.0;
+            return score;
+        }
+        if (label.equals("Hide")) {
+            return 10.0 + (this.smarts * 15.0) + ((1.0 - this.health) * 35.0);
+        }
+        if (label.equals("Rest")) {
+            return (this.health < 0.8) ? 15.0 + ((1.0 - this.health) * 35.0) : 5.0;
+        }
+
+        return 10.0; // Default fallback for any custom actions
     }
 }

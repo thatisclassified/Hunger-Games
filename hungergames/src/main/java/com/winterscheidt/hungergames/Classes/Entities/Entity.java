@@ -123,7 +123,8 @@ public abstract class Entity implements Inspectable, Serializable {
     public abstract void die(Game game, Killer cause);
     public abstract void turnStart(Game game);
     public abstract void turnEnd(Game game);
-    public abstract GameAction chooseAction(List<GameAction> actions);
+    public abstract GameAction chooseAction(List<GameAction> actions, Game game);
+    protected abstract double scoreAction(GameAction action, Game game);
 
     public abstract double attack(Entity entity, Game game);
 }
