@@ -13,4 +13,7 @@ public class Helpers {
     public static double lerp(double base, double amount) {
         return lerp(base, 1, amount);
     }
+    public static int convertPercent(double percent) {
+        return (int) Math.round(percent * 100); 
+    }
 }

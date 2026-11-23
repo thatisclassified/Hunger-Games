@@ -15,12 +15,14 @@ import com.winterscheidt.hungergames.Interfaces.GameIO;
 import com.winterscheidt.hungergames.Interfaces.Interactable;
 import com.winterscheidt.hungergames.Interfaces.Usable;
 import com.winterscheidt.hungergames.Utils.DetectionLevel;
+import com.winterscheidt.hungergames.Utils.Helpers;
 
 public class Game implements Serializable {
     private List<Location> locations = new ArrayList<>();
     private List<Entity> entities = new ArrayList<>();
     private List<GameAction> currentMenu;
     private Entity currentEntity;
+    private int currentEntityIndex;
     private GameIO io = ConsoleIO.io;
     private int remainingTributes;
     private boolean gameOver = false;
@@ -28,7 +30,7 @@ public class Game implements Serializable {
     // Getters
     public void openMenu(List<GameAction> menu) {
         this.currentMenu = menu;
-        io.displayMenu(currentMenu);
+        //io.displayMenu(currentMenu);
     }
     public List<Entity> getEntities() {
         return this.entities;
@@ -46,6 +48,14 @@ public class Game implements Serializable {
         return this.gameOver;
     }
 
+    // Setters
+    public void setRemainingTributes(int tributes) {
+        this.remainingTributes = tributes;
+    }
+    public void reduceTributes() {
+        this.remainingTributes--;
+    }
+
     // Constructors
     public Game(GameIO io) {
         this.io = io;
@@ -53,22 +63,21 @@ public class Game implements Serializable {
     }
 
     // TURN MANAGERS
-    // TODO: Need to fix the recursion depth problem here;
-    // game will crash if AI fights each other for weeks
-    // Additionally, I need to make a better system so that
-    // not every action has to reopen main(); use endsTurn flag for this
-    /*
     public void startTurn(int index) {
-        while (!gameOver) {
-            currentEntity = entities.get(index);
+        currentEntityIndex = index;
+        while (!this.gameOver) {
+            currentEntity = entities.get(currentEntityIndex);
             currentEntity.turnStart(this);
+            io.broadcast("\n" + currentEntity.getName() + " is at " + 
+            Helpers.convertPercent(currentEntity.getHealth()) + " health.");
             if (currentEntity.getHealth() > 0) {
-                if (currentEntity.isAI()) {
+                openMenu(getMainActions(currentEntity));
 
-                } else {
+                if (currentEntity.isAI()) {
+                    startChoice();
+                } else {            
                     io.broadcast("It's your turn, " + currentEntity.getName(), currentEntity);
-                    openMenu(getMainActions(currentEntity));
-                    io.displayMenu(currentMenu, currentEntity);
+                    startChoice();
                     return;
                 }
             }
@@ -77,64 +86,36 @@ public class Game implements Serializable {
             }
         }
     }
-    */
-
-    public void startTurn(int index) {
-        startTurn(this.entities.get(index));
-    }
-    public void startTurn(Entity entity) {
-        this.currentEntity = entity;
-        entity.turnStart(this);
-        if (entity.getHealth() <= 0) {
-            endTurn();
-            if (this.remainingTributes <= 1) {
-                this.gameOver = true;
-                return;
-            }
-        } else {
-            io.broadcast("\n\nIt's your turn, " + entity.getName(), entity);
-            openMenu(getMainActions(entity));
-            turnBody(entity);
-        }
-    }
-
-    public void turnBody(Entity entity) {
-        if (entity.isAI()) {
-            GameAction action = entity.chooseAction(currentMenu);
-            runAction(action);
-            if (!action.endsTurn()) {
-                turnBody(entity);
-            }
-        }
-    }
 
     public void runAction(int index) {
         runAction(currentMenu.get(index));
     }
-    // public void runAction(GameAction action) {
-    //     action.execute();
-    //     if ()
-    // }
-    // public void runAction(GameAction action) {
-    //     action.execute();
-    // }
-
     public void runAction(GameAction action) {
         action.execute();
-        if (currentEntity.getHealth() <= 0 || action.endsTurn()) {
-            endTurn();
+        if (action.opensSubMenu()) {
+            startChoice();
+        } else if (!action.endsTurn()) {
+            openMenu(getMainActions(currentEntity));
+            startChoice();
         } else {
-//            openMenu(getMainActions(currentEntity));
+            endTurn();
+        }
+    }
+
+    public void startChoice() {
+        if (currentEntity.isAI()) {
+            GameAction choice = currentEntity.chooseAction(currentMenu);
+            runAction(choice);
+        } else {
+            io.displayMenu(currentMenu, currentEntity);
         }
     }
 
     public void endTurn() {
         currentEntity.turnEnd(this);
-        int previous = this.entities.indexOf(currentEntity);
-        if (previous + 1 < this.entities.size()) {
-            startTurn(previous + 1);
-        } else {
-            startTurn(0);
+        currentEntityIndex = (currentEntityIndex + 1) % entities.size();
+        if (!currentEntity.isAI()) {
+            startTurn(currentEntityIndex);
         }
     }
 
@@ -144,14 +125,13 @@ public class Game implements Serializable {
     public List<GameAction> getMoveActions(Entity entity) {
         List<GameAction> actions = new ArrayList<>();
         for (String locName : entity.getLocation().getConnections().keySet()) {
-            actions.add(new GameAction("Move: " + locName, false,
+            actions.add(new GameAction("Move " + locName, false, false,
             () -> {
                 entity.move(locName);
-                io.broadcast("Moved to " + locName + ".", entity);
-                openMenu(getMainActions(entity));
+                io.broadcast("Moved " + locName + ".", entity);
             }));
         }
-        actions.add(new GameAction("Back", false, () -> openMenu(getMainActions(entity))));
+        actions.add(new GameAction("Back", false, true, () -> openMenu(getMainActions(entity))));
         return actions;
     }
 
@@ -159,14 +139,13 @@ public class Game implements Serializable {
         List<GameAction> actions = new ArrayList<>();
         if (!entity.isAI()) {
             for (Item item : entity.getLocation().getItems()) {
-                actions.add(new GameAction("Inspect " + item.getName(), false, 
+                actions.add(new GameAction("Inspect " + item.getName(), false, false, 
                 () -> { 
                     io.broadcast(item.getDescription(), entity);
-                    openMenu(getMainActions(entity)); 
                 }));
             }
         }
-        actions.add(new GameAction("Back", false, () -> openMenu(getMainActions(entity))));
+        actions.add(new GameAction("Back", false, true, () -> openMenu(getMainActions(entity))));
         return actions;
     }
 
@@ -174,20 +153,19 @@ public class Game implements Serializable {
         List<GameAction> actions = new ArrayList<>();
         for (Item item : entity.getLocation().getItems()) {
             if (item instanceof Attainable) {
-                actions.add(new GameAction("Pick up " + item.getName(), true, () -> {
-                    //io.broadcast(entity.takeItem(item) ? "Success" : "Fail");
+                actions.add(new GameAction("Pick up " + item.getName(), true, false, () -> {
                     entity.takeItem(item);
                     io.broadcast("Took " + item.getName() + ".", entity);
                 }));
             }
             if (item instanceof Interactable) {
-                actions.add(new GameAction("Interact with " + item.getName(), true, () -> {
+                actions.add(new GameAction("Interact with " + item.getName(), true, false, () -> {
                 ((Interactable) item).interact(entity, this);
                 io.broadcast("Interacted with " + item.getName(), entity);
             }));
             }
         }
-        actions.add(new GameAction("Back", false, () -> openMenu(getMainActions(entity))));
+        actions.add(new GameAction("Back", false, true, () -> openMenu(getMainActions(entity))));
         return actions;
     }
 
@@ -195,35 +173,33 @@ public class Game implements Serializable {
 //        io.broadcast("ITEMS: " + entity.getInventory().getItems());
         List<GameAction> actions = new ArrayList<>();
         if (entity.getEquipped() != null && entity.getInventory().getSize() < entity.getInventory().getMaxSize()) {
-            actions.add(new GameAction("Unequip " + entity.getEquipped().getName(), false, 
+            actions.add(new GameAction("Unequip " + entity.getEquipped().getName(), false, false,
             () -> { 
+                String itemName = entity.getEquipped().getName();
                 if (entity.unequipItem()) { 
-                    io.broadcast(entity.getEquipped().getName() + " unequipped.", entity); 
+                    io.broadcast(itemName + " unequipped.", entity); 
                 }
-                openMenu(getMainActions(entity));
             }));
         }
         for (Item item : entity.getInventory().getItems()) {
             if (item instanceof Equippable) {
-                actions.add(new GameAction("Equip " + item.getName(), false, 
+                actions.add(new GameAction("Equip " + item.getName(), false, false,
                 () -> { 
                     if (entity.equipItem(item)) {
                         io.broadcast(item.getName() + " equipped.", entity); 
                     }
-                    openMenu(getMainActions(entity));
                 }));
             }
             if (item instanceof Usable) {
-                actions.add(new GameAction("Use " + item.getName(), false,
+                actions.add(new GameAction("Use " + item.getName(), false, false,
                 () -> { 
                     if (entity.useItem(item, this)) {
                         io.broadcast("Used " + item.getName(), entity);
                     }
-                    openMenu(getMainActions(entity));
                 })); // Should this be passing in a game?
             }
         }
-        actions.add(new GameAction("Back", false, () -> openMenu(getMainActions(entity))));
+        actions.add(new GameAction("Back", false, true, () -> openMenu(getMainActions(entity))));
         return actions;
     }
 
@@ -236,7 +212,7 @@ public class Game implements Serializable {
                 DetectionLevel detection = entity.getDetection(ent2);
             
                 actions.add(new GameAction("Attack " + (detection == DetectionLevel.RECOGNIZED ?
-                ent2.getName() : "Obscured Figure"), true, () -> {
+                ent2.getName() : "Obscured Figure"), true, false, () -> {
                     io.broadcast("You attack " + ent2.getName(), entity);
 
                     // Is there a weapon?
@@ -259,26 +235,29 @@ public class Game implements Serializable {
                         io.broadcast("The attack misses!", entity.getLocation(), ent2);
                         io.broadcast("You were able to dodge!", ent2);
                     } else {
-                        io.broadcast("You dealt " + damage + " damage.");
-                        io.broadcast(entity.getGender().capObject() + " dealt " + damage +
-                        " damage to you.");
+                        io.broadcast("You dealt " + Helpers.convertPercent(damage) + " damage.");
+                        io.broadcast(entity.getGender().capSubject() + " dealt " + 
+                        Helpers.convertPercent(damage) + " damage to you.");
                         io.broadcast("The attack lands.", entity.getLocation(), exclude);
                     }
                 }));
                 // Might add some more actions later, ie, talk()
             }
         }
-        actions.add(new GameAction("Back", false, () -> openMenu(getMainActions(entity))));
+        actions.add(new GameAction("Back", false, true, () -> openMenu(getMainActions(entity))));
         return actions;
     }
 
+    public List<GameAction> getMainActions(int index) {
+        return getMainActions(this.entities.get(index));
+    }
     public List<GameAction> getMainActions(Entity entity) {
         List<GameAction> actions = new ArrayList<>();
         Player player = entity instanceof Player ? (Player) entity : null;
 
         // LOOK AROUND
         if (player != null && !entity.isAI()) {
-            actions.add(new GameAction("Look Around", false, 
+            actions.add(new GameAction("Look Around", false, false,
             () -> { 
                 io.broadcast(player.getLocation().getFullDescription(this, entity), entity); 
                 openMenu(getMainActions(entity));
@@ -287,40 +266,41 @@ public class Game implements Serializable {
 
         // MOVE
         if (entity.canMove()) {
-            actions.add(new GameAction("Move...", false, // This should check canMove(),
-            () -> openMenu(getMoveActions(entity)))); // and be available for all entities
+            actions.add(new GameAction("Move...", false, true,
+            () -> openMenu(getMoveActions(entity))));
         }
 
         // INSPECT
         if (player != null) { 
             if (!entity.isAI()) {
-                actions.add(new GameAction("Inspect...", false, 
+                actions.add(new GameAction("Inspect...", false, true,
                 () -> openMenu(getInspectActions(player))));
             }
-            actions.add(new GameAction("Pick Up / Interact...", false, 
+            actions.add(new GameAction("Pick Up / Interact...", false,  true,
             () -> openMenu(getInteractActions(player))));
-            actions.add(new GameAction("Use / Equip...", false, 
+            actions.add(new GameAction("Use / Equip...", false, true,
             () -> openMenu(getInventoryActions(player))));
         }
             
         // ATTACK
-        actions.add(new GameAction("Attack...", false, // Same with attack and hide
+        actions.add(new GameAction("Attack...", false, true,
         () -> openMenu(getEntityActions(entity))));
         
         // REST
-        actions.add(new GameAction("Rest", true, () -> {
+        actions.add(new GameAction("Rest", true, false, () -> {
             entity.lerpObscurity(0.2);
             entity.addHealth(0.05);
             if (player != null) {
                 player.addHunger(-0.02);
                 player.addThirst(-0.02);
             }
+            io.broadcast("You were able to heal up by resting awhile.");
         }));
 
         // HIDE
-        actions.add(new GameAction("Hide", true, 
+        actions.add(new GameAction("Hide", true, false,
         () -> {
-            entity.lerpObscurity(0.7);
+            entity.lerpObscurity(0.6);
             io.broadcast("Hidden.", entity);
         }));
 

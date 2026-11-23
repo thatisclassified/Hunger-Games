@@ -114,6 +114,7 @@ public class Player extends Entity implements Killer {
     public void turnStart(Game game) {
         this.obscurity = this.location.getBaseObscurity() * this.agility;
         this.perception = this.smarts - 1;
+        this.perceptionMod = Math.random();
 
         if (this.hunger >= NUTRITION_THRESHOLD) {
             this.addHealth(-NUTRITION_DAMAGE, game, CauseOfDeath.HUNGER);
@@ -133,6 +134,7 @@ public class Player extends Entity implements Killer {
         // Need to implement this further
         this.description = cause.getKillDescription(this);
         game.getIO().broadcast("BOOM!");
+        game.reduceTributes();
     }
 
     @Override

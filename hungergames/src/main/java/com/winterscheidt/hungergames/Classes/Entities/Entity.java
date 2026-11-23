@@ -24,6 +24,7 @@ public abstract class Entity implements Inspectable, Serializable {
     protected double agility = 1;
     protected double obscurity = 0;
     protected double perception = 0;
+    protected double perceptionMod = 0;
     protected Gender gender = Gender.randomGender();
 
     // Getters and Setters
@@ -68,7 +69,7 @@ public abstract class Entity implements Inspectable, Serializable {
     }
     public DetectionLevel getDetection(Entity entity) {
         // Roll perception: base perception + random roll (e.g., 0.0 to 1.0)
-        double roll = this.getPerception() + Math.random(); 
+        double roll = this.getPerception() + this.perceptionMod; 
         double effectiveObscurity = Math.min(0.95, entity.getObscurity());
         
         double margin = roll - effectiveObscurity;

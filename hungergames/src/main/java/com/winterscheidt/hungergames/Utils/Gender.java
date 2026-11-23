@@ -31,20 +31,20 @@ public enum Gender {
     }
 
     public String capSubject() { 
-        return subject.substring(0, 0).toUpperCase() + 
-            subject.substring(1, subject.length() - 1); 
+        return subject.substring(0, 1).toUpperCase() + 
+            subject.substring(1, subject.length()); 
     }
     public String capObject() {
-         return object.substring(0, 0).toUpperCase() + 
-            object.substring(1, object.length() - 1);
+         return object.substring(0, 1).toUpperCase() + 
+            object.substring(1, object.length());
     }
     public String capPossessive() { 
-        return possessive.substring(0, 0).toUpperCase() + 
-            possessive.substring(1, possessive.length() - 1); 
+        return possessive.substring(0, 1).toUpperCase() + 
+            possessive.substring(1, possessive.length()); 
     }
     public String capReflexive() { 
-        return reflexive.substring(0, 0).toUpperCase() + 
-            reflexive.substring(1, reflexive.length() - 1);
+        return reflexive.substring(0, 1).toUpperCase() + 
+            reflexive.substring(1, reflexive.length());
     }
 
     public String subject() { return subject; }

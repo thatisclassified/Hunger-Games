@@ -57,5 +57,7 @@ public class ArenaBuilder {
         entities.add(Cato);
         entities.add(Rue);
         entities.add(Katniss);
+
+        game.setRemainingTributes(entities.size());
     }
 }
