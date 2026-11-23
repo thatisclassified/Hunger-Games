@@ -16,6 +16,7 @@ public class ArenaBuilder {
 
     }
 
+    // NOTE: This constructor only intended for ConsoleIO!!!
     public static void buildTest(Game game) {
         // ITEMS & WEAPONS
         Weapon sword = new Weapon("Sword", "Very Sharp", 0.15, 0.7, 12,

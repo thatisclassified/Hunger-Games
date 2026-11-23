@@ -26,8 +26,12 @@ public abstract class Entity implements Inspectable, Serializable {
     protected double perception = 0;
     protected double perceptionMod = 0;
     protected Gender gender = Gender.randomGender();
+    protected String discordUserID;
 
     // Getters and Setters
+    public String getDiscordUserID() {
+        return this.discordUserID;
+    }
     public String getName() {
         return this.name;
     }

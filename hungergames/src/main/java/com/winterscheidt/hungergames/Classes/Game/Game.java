@@ -59,6 +59,9 @@ public class Game implements Serializable {
     public Game(GameIO io) {
         this.io = io;
         ArenaBuilder.build(this);
+        if (this.io instanceof DiscordIO) {
+            ((DiscordIO) this.io).setGame(this);
+        }
     }
 
     // TURN MANAGERS

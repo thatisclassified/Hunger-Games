@@ -61,6 +61,32 @@ public class Player extends Entity implements Killer {
         this.strength = strength;
     }
 
+    // Updated constructors for use with the DiscordIO
+    public Player(String name, String description, String discordUserID, Location location) {
+        this(name, description, discordUserID, location, (int) (Math.random() * 12 + 1), Gender.randomGender(), 
+        0.75 + Math.random() / 2, 0.75 + Math.random() / 2, 0.75 + Math.random() / 2);
+    }
+    public Player(String name, String discordUserID, Location location, Gender gender) {
+        this(name, gender.subject() + " looks healthy.", discordUserID, location, (int) (Math.random() * 12 + 1), gender, 
+         0.75 + Math.random() / 2, 0.75 + Math.random() / 2, 0.75 + Math.random() / 2);
+        
+    }
+    // And one for all the attributes
+    public Player(String name, String description, String discordUserID, Location location, int district, Gender gender, double aggression, double smarts, double strength) {
+        this.name = name;
+        this.description = description;
+        this.AI = discordUserID.isEmpty();
+        if (!discordUserID.isEmpty()) {
+            this.discordUserID = discordUserID;
+        }
+        this.location = location;
+        this.district = district;
+        this.gender = gender;
+        this.aggression = aggression;
+        this.smarts = smarts;
+        this.strength = strength;
+    }
+
     // Getters
     public Inventory getInventory() {
         return this.inventory;
