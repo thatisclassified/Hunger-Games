@@ -40,5 +40,23 @@ public class ConsoleIO implements GameIO {
         // Implement later
         displayMenu(items);
     }
+
+    @Override
+    public void broadcast(String message, Location location, Entity exclude) {
+        // Implement later
+        broadcast(message);
+    }
+
+    @Override
+    public void broadcast(String message, List<Entity> entities) {
+        // Implement later
+        broadcast(message);
+    }
+
+    @Override
+    public void broadcast(String message, Location location, List<Entity> exclude) {
+        // Implement later
+        broadcast(message);
+    }
     
 }

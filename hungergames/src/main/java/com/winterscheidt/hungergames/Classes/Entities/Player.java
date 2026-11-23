@@ -7,6 +7,7 @@ import com.winterscheidt.hungergames.Classes.Game.GameAction;
 import com.winterscheidt.hungergames.Classes.Items.Item;
 import com.winterscheidt.hungergames.Classes.Items.Weapon;
 import com.winterscheidt.hungergames.Utils.CauseOfDeath;
+import com.winterscheidt.hungergames.Utils.DetectionLevel;
 import com.winterscheidt.hungergames.Utils.Gender;
 import com.winterscheidt.hungergames.Utils.Helpers;
 import com.winterscheidt.hungergames.Utils.Inventory;
@@ -18,7 +19,9 @@ import com.winterscheidt.hungergames.Interfaces.Usable;
 public class Player extends Entity implements Killer {
     // Static Constants
     private static final double NUTRITION_THRESHOLD = 0.8;
-    private static final double NUTRITION_DAMAGE = 0.8;
+    private static final double NUTRITION_DAMAGE = 0.05;
+    private static final double MELEE_DAMAGE = 0.08;
+    private static final double MELEE_ACCURACY = 0.9;
 
     // Fields
     private Inventory inventory = new Inventory();
@@ -29,7 +32,6 @@ public class Player extends Entity implements Killer {
     private double aggression = 1;
     private double smarts = 1;
     private double strength = 1;
-    private double lithe = 1;
 
     // Modifiers / Data
     private double hunger = 0;
@@ -100,9 +102,8 @@ public class Player extends Entity implements Killer {
 
     // Game Management
     public void turnStart(Game game) {
-        this.obscurity = this.location.getBaseObscurity();
+        this.obscurity = this.location.getBaseObscurity() * this.agility;
         this.perception = this.smarts - 1;
-        this.canMove = true;
 
         if (this.hunger >= NUTRITION_THRESHOLD) {
             this.addHealth(-NUTRITION_DAMAGE, game, CauseOfDeath.HUNGER);
@@ -114,11 +115,13 @@ public class Player extends Entity implements Killer {
     public void turnEnd(Game game) {
         this.hunger += 0.05;
         this.thirst += 0.05;
+        this.canMove = true;
     }
 
     public void die(Game game, Killer cause) {
         // Need to implement this further
         this.description = cause.getKillDescription(this);
+        game.getIO().broadcast("BOOM!");
     }
 
     public String getKillMessage(Entity entity) {
@@ -137,5 +140,32 @@ public class Player extends Entity implements Killer {
                 g.capPossessive() + " body is heavily bruised, as if " +
                 g.object() + " had a hand-to-hand struggle.";
         }
+    }
+
+    @Override
+    public double attack(Entity entity, Game game) {
+        Weapon weapon = (Weapon) this.equippedItem;
+        if (weapon != null) {
+            weapon.addUses(-1); // Handle breakage if durability <= 0
+        }
+
+        double baseAcc = (weapon != null) ? weapon.getAccuracy() : MELEE_ACCURACY; // Unarmed accuracy
+        double rawHitChance = (baseAcc / entity.getAgility()) - (entity.getObscurity() * 0.25);
+        double hitChance = Math.max(0.10, Math.min(0.95, rawHitChance));
+
+        if (Math.random() > hitChance) {
+            return 0;
+        }
+
+        double baseDmg = (weapon != null) ? weapon.getDamage() : MELEE_DAMAGE;
+        double variance = 0.9 + (Math.random() * 0.2);
+        double finalDamage = baseDmg * this.strength * variance;
+
+        // Attacking breaks stealth
+        // this.setObscurity(this.location.getBaseObscurity());
+
+        entity.addHealth(-finalDamage, game, this);
+
+        return finalDamage;
     }
 }

@@ -34,23 +34,9 @@ public class Game implements Serializable {
     public Entity getCurrentEntity() {
         return this.currentEntity;
     }
-
-    public DetectionLevel getDetection(Entity observer, Entity target) {
-        // Roll perception: base perception + random roll (e.g., 0.0 to 1.0)
-        double roll = observer.getPerception() + Math.random(); 
-        double effectiveObscurity = Math.min(0.95, target.getObscurity());
-        
-        double margin = roll - effectiveObscurity;
-
-        if (margin >= 0.4) {
-            return DetectionLevel.RECOGNIZED; // "You see Cato hiding near the rocks."
-        } else if (margin >= 0.0) {
-            return DetectionLevel.SPOTTED;    // "You spot a shadowy figure moving in the brush."
-        } else {
-            return DetectionLevel.HIDDEN;     // Completely unseen!
-        }
+    public GameIO getIO() {
+        return this.io;
     }
-
 
     // TURN MANAGERS
     public void startTurn(Entity entity) {
@@ -152,13 +138,40 @@ public class Game implements Serializable {
         List<GameAction> actions = new ArrayList<>();
         Location entLoc = entity.getLocation();
         for (Entity ent2 : entities) {
+            // Check for same location
             if (ent2 != entity && ent2.getLocation() == entLoc) {
-                DetectionLevel detection = getDetection(entity, ent2);
-                if (detection == DetectionLevel.RECOGNIZED) {
-                    actions.add(new GameAction("Attack " + ent2.getName(), true, null));
-                } else if (detection == DetectionLevel.SPOTTED) {
-                    actions.add(new GameAction("Attack Obscured Figure", true, null));
-                }
+                DetectionLevel detection = entity.getDetection(ent2);
+            
+                actions.add(new GameAction("Attack " + (detection == DetectionLevel.RECOGNIZED ?
+                ent2.getName() : "Obscured Figure"), true, () -> {
+                    io.broadcast("You attack " + ent2.getName(), entity);
+
+                    // Is there a weapon?
+                    String with = "";
+                    if (entity instanceof Player) {
+                        if (((Player) entity).getEquipped() != null) {
+                            with = " with a " + ((Player) entity).getEquipped().getName();
+                        }
+                    }
+
+                    // Broadcast to everyone in the area, besides the attacker and victim
+                    io.broadcast(entity.getName() + " attacks you" + with + "!", ent2);
+                    List<Entity> exclude = new ArrayList<Entity>();
+                    exclude.add(entity);
+                    exclude.add(ent2);
+                    io.broadcast(entity.getName() + " attacks " + ent2.getName() + with + ".", exclude);
+                    double damage = entity.attack(ent2, this);
+
+                    if (damage == 0) {
+                        io.broadcast("The attack misses!", entity.getLocation(), ent2);
+                        io.broadcast("You were able to dodge!", ent2);
+                    } else {
+                        io.broadcast("You dealt " + damage + " damage.");
+                        io.broadcast(entity.getGender().capObject() + " dealt " + damage +
+                        " damage to you.");
+                        io.broadcast("The attack lands.", entity.getLocation(), exclude);
+                    }
+                }));
                 // Might add some more actions later, ie, talk()
             }
         }
@@ -201,7 +214,7 @@ public class Game implements Serializable {
         // REST
         actions.add(new GameAction("Rest", true, () -> {
             entity.lerpObscurity(0.2);
-            entity.addHealth(0.03);
+            entity.addHealth(0.05);
             if (player != null) {
                 player.addHunger(-0.02);
                 player.addThirst(-0.02);

@@ -10,18 +10,34 @@ import com.winterscheidt.hungergames.Interfaces.Killer;
 
 public class Weapon extends Item implements Equippable, Attainable, Killer {
     private double damage;
+    private double accuracy;
+    private int uses;
 
     private final Function<Entity, String> messageGenerator;
     private final Function<Entity, String> descriptionGenerator;
 
-    Weapon(String name, String description, double damage, 
+    Weapon(String name, String description, double damage, double accuracy, int uses,
         Function<Entity, String> messageGenerator,
         Function<Entity, String> descriptionGenerator
     ) {
         super(name, description);
         this.damage = damage;
+        this.accuracy = accuracy;
         this.messageGenerator = messageGenerator;
         this.descriptionGenerator = descriptionGenerator;
+    }
+
+    public double getDamage() {
+        return this.damage;
+    }
+    public double getAccuracy() {
+        return this.accuracy;
+    }
+    public int getUses() {
+        return this.uses;
+    }
+    public void addUses(int uses) {
+        this.uses += uses;
     }
 
     @Override

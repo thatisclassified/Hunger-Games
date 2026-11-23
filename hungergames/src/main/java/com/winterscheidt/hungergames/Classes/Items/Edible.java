@@ -9,13 +9,15 @@ public class Edible extends Item implements Usable, Attainable {
     private int uses;
     private double food;
     private double water;
+    private double health;
 
     // Constructor
-    public Edible(String name, String description, int uses, double food, double water) {
+    public Edible(String name, String description, int uses, double food, double water, double health) {
         super(name, description);
         this.uses = uses;
         this.food = food;
         this.water = water;
+        this.health = health;
     }
 
     // Method
@@ -23,6 +25,7 @@ public class Edible extends Item implements Usable, Attainable {
         if (this.uses > 0) {
             player.addHunger(-this.food);
             player.addThirst(-this.water);
+            player.addHealth(this.health);
             this.uses--;
         }
     }

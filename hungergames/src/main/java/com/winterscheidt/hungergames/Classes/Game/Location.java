@@ -102,7 +102,7 @@ public class Location implements Serializable {
         boolean entities = false;
         for (Entity entity : game.getEntities()) {
             if (entity.getLocation() == this) {
-                DetectionLevel detection = game.getDetection(game.getCurrentEntity(), entity);
+                DetectionLevel detection = game.getCurrentEntity().getDetection(entity);
                 if (detection != DetectionLevel.HIDDEN) {
                     if (!entities) {
                         result += "You see the following creatures: \n";

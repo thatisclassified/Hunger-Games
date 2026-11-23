@@ -2,6 +2,7 @@ package com.winterscheidt.hungergames.Classes.Entities;
 
 import com.winterscheidt.hungergames.Interfaces.Inspectable;
 import com.winterscheidt.hungergames.Interfaces.Killer;
+import com.winterscheidt.hungergames.Utils.DetectionLevel;
 import com.winterscheidt.hungergames.Utils.Gender;
 import com.winterscheidt.hungergames.Utils.Helpers;
 
@@ -17,6 +18,7 @@ public abstract class Entity implements Inspectable, Serializable {
     protected Location location;
     protected boolean AI = true;
     protected boolean canMove = true;
+    protected double agility = 1;
     protected double obscurity = 0;
     protected double perception;
     protected Gender gender;
@@ -33,6 +35,9 @@ public abstract class Entity implements Inspectable, Serializable {
     }
     public double getPerception() {
         return this.perception;
+    }
+    public double getAgility() {
+        return this.agility;
     }
     public boolean isAI() {
         return this.AI;
@@ -57,6 +62,21 @@ public abstract class Entity implements Inspectable, Serializable {
     }
     public void lerpPerception(double amount) {
         this.perception = Helpers.lerp(this.perception, amount);
+    }
+    public DetectionLevel getDetection(Entity entity) {
+        // Roll perception: base perception + random roll (e.g., 0.0 to 1.0)
+        double roll = this.getPerception() + Math.random(); 
+        double effectiveObscurity = Math.min(0.95, entity.getObscurity());
+        
+        double margin = roll - effectiveObscurity;
+
+        if (margin >= 0.4) {
+            return DetectionLevel.RECOGNIZED; // "You see Cato hiding near the rocks."
+        } else if (margin >= 0.0) {
+            return DetectionLevel.SPOTTED;    // "You spot a shadowy figure moving in the brush."
+        } else {
+            return DetectionLevel.HIDDEN;     // Completely unseen!
+        }
     }
 
     // Movement Methods
@@ -99,4 +119,6 @@ public abstract class Entity implements Inspectable, Serializable {
     public abstract void die(Game game, Killer cause);
     public abstract void turnStart(Game game);
     public abstract void turnEnd(Game game);
+
+    public abstract double attack(Entity entity, Game game);
 }
