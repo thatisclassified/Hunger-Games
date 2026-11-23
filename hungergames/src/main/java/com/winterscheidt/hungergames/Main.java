@@ -11,7 +11,6 @@ public class Main {
     public static void main(String[] args) {
         GameIO io = ConsoleIO.io;
         Game game = new Game(io);
-        ArenaBuilder.build(game);
         io.broadcast("Ladies and Gentlemen, Welcome to the 0th Annual Hunger Games!");
         
         Scanner input = new Scanner(System.in);
