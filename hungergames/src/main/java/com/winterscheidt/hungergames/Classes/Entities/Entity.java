@@ -26,14 +26,20 @@ public abstract class Entity implements Inspectable, Serializable {
     protected double perception = 0;
     protected double perceptionMod = 0;
     protected Gender gender = Gender.randomGender();
-    protected String discordUserID;
+    protected String discordUserID = "";
 
     // Getters and Setters
     public String getDiscordUserID() {
         return this.discordUserID;
     }
+    public void setDiscordUserID(String discordUserID) {
+        this.discordUserID = discordUserID;
+    }
     public String getName() {
         return this.name;
+    }
+    public String setName(String name) {
+        this.name = name;
     }
     public String getDescription() {
         return this.description;
@@ -49,6 +55,9 @@ public abstract class Entity implements Inspectable, Serializable {
     }
     public boolean isAI() {
         return this.AI;
+    }
+    public void setAI(boolean AI) {
+        this.AI = AI;
     }
     public Location getLocation() {
         return this.location;
