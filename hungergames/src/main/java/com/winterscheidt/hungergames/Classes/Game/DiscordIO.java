@@ -41,7 +41,7 @@ public class DiscordIO implements GameIO {
         if (entity == null || entity.isAI() || message == null || message.isBlank()) {
             return;
         }
-        String discordId = entity.getDiscordUserId();
+        String discordId = entity.getDiscordUserID();
         if (discordId == null) {
             return;
         }
@@ -101,7 +101,7 @@ public class DiscordIO implements GameIO {
         if (entity == null || entity.isAI() || items == null || items.isEmpty()) {
             return;
         }
-        String discordId = entity.getDiscordUserId();
+        String discordId = entity.getDiscordUserID();
         if (discordId == null) {
             return;
         }
@@ -126,7 +126,7 @@ public class DiscordIO implements GameIO {
         int limit = Math.min(items.size(), 25); // Discord hard cap of 25 buttons per message
         for (int i = 0; i < limit; i++) {
             GameAction action = items.get(i);
-            String label = action.getLabel();
+            String label = action.getName();
 
             Button btn = label.equals("Back")
                     ? Button.secondary("hg_act_" + i, label)
