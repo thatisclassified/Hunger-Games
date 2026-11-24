@@ -75,8 +75,8 @@ public class Player extends Entity implements Killer {
     public Player(String name, String description, String discordUserID, Location location, int district, Gender gender, double aggression, double smarts, double strength) {
         this.name = name;
         this.description = description;
-        this.AI = discordUserID.isEmpty();
-        if (!discordUserID.isEmpty()) {
+        this.AI = discordUserID == null;
+        if (discordUserID != null) {
             this.discordUserID = discordUserID;
         }
         this.location = location;

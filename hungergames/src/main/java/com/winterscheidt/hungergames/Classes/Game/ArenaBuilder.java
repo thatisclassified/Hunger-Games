@@ -53,7 +53,7 @@ public class ArenaBuilder {
         List<Entity> entities = game.getEntities();
         Player Cato = new Player("Cato", "Muscular", true, cornucopia);
         Player Rue = new Player("Rue", "Small", true, field);
-        Player Katniss = new Player("Katniss", "Brave", false, cornucopia);
+        Player Katniss = new Player("Katniss", "Brave", true, cornucopia);
         entities.add(Cato);
         entities.add(Rue);
         entities.add(Katniss);
