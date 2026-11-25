@@ -67,7 +67,7 @@ public class Player extends Entity implements Killer {
         0.75 + Math.random() / 2, 0.75 + Math.random() / 2, 0.75 + Math.random() / 2);
     }
     public Player(String name, boolean AI, Location location, Gender gender) {
-        this(name, gender.subject() + " looks healthy.", AI, location, (int) (Math.random() * 12 + 1), gender, 
+        this(name, gender.capSubject() + " looks healthy.", AI, location, (int) (Math.random() * 12 + 1), gender, 
          0.75 + Math.random() / 2, 0.75 + Math.random() / 2, 0.75 + Math.random() / 2);   
     }
     // And one for all the attributes

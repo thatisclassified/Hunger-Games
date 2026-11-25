@@ -27,7 +27,7 @@ public class Location implements Serializable {
         this.name = name;
         this.description = description;
         this.baseObscurity = baseObscurity;
-        this.items = items;
+        this.items = new ArrayList<Item>(items);
     }
     public Location (String name, String description, double baseObscurity) {
         this.name = name;
@@ -37,12 +37,12 @@ public class Location implements Serializable {
     public Location (String name, String description, List<Item> items) {
         this.name = name;
         this.description = description;
-        this.items = items;
+        this.items = new ArrayList<Item>(items);
     }
     public Location (String name, String description, List<Item> items, Map<String, Location> connections) {
         this.name = name;
         this.description = description;
-        this.items = items;
+        this.items = new ArrayList<Item>(items);
         this.connections = connections;
     }
 

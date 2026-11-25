@@ -9,12 +9,14 @@ import com.winterscheidt.hungergames.Interfaces.Interactable;
 import com.winterscheidt.hungergames.Utils.Inventory;
 
 public class Container extends Item implements Interactable {
-    private Inventory inventory;
+    private Inventory inventory = new Inventory();
     private boolean extendsSize = false;
     private boolean locationDump = false;
 
     public Container(String name, String description, Inventory inventory, boolean extendsSize) {
         super(name, description);
+        this.inventory = inventory;
+        this.extendsSize = extendsSize;
     }
 
     @Override
@@ -25,13 +27,14 @@ public class Container extends Item implements Interactable {
         }
         String message = "You open up the " + name + ". Inside, you find: ";
         for (Item item : inventory.getItems()) {
-            message += " - " + item.getName();
+            message += "\n - " + item.getName();
             if (locationDump || pInv.getSize() >= pInv.getMaxSize()) {
                 player.getLocation().addItem(item);
             } else {
                 pInv.addItem(item);
             }
         }
-        game.getIO().broadcast(message);
+        player.getLocation().removeItem(this);
+        game.getIO().broadcast(message, player);
     }
 }
