@@ -246,7 +246,7 @@ public class Game implements Serializable {
                     List<Entity> exclude = new ArrayList<Entity>();
                     exclude.add(entity);
                     exclude.add(ent2);
-                    io.broadcast(entity.getName() + " attacks " + ent2.getName() + with + ".", exclude);
+                    io.broadcast(entity.getName() + " attacks " + ent2.getName() + with + ".", entity.getLocation(), exclude);
                     double damage = entity.attack(ent2, this);
 
                     if (damage == 0) {

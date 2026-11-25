@@ -224,8 +224,7 @@ public class Player extends Entity implements Killer {
         String deathMessage = cause.getKillMessage(this);
         game.getIO().broadcast("**You have died.** At the time of your death, there were " +
             game.getRemainingTributes() + " tributes remaining.\nDon't worry, though. You'll " +
-            "be remembered--for a day or two, at least. \"" + deathMessage + "\""
-        );
+            "be remembered--for a day or two, at least. \"" + deathMessage + "\"", this);
         game.getIO().broadcast(deathMessage, this.location, this);
         game.reduceTributes();
     }
