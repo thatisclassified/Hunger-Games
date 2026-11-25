@@ -20,10 +20,10 @@ import com.winterscheidt.hungergames.Utils.Helpers;
 public class Game implements Serializable {
     private List<Location> locations = new ArrayList<>();
     private List<Entity> entities = new ArrayList<>();
-    private List<GameAction> currentMenu;
+    private transient List<GameAction> currentMenu;
     private Entity currentEntity;
     private int currentEntityIndex;
-    private GameIO io = ConsoleIO.io;
+    private transient GameIO io = ConsoleIO.io;
     private int remainingTributes;
     private boolean gameOver = false;
 
@@ -53,6 +53,9 @@ public class Game implements Serializable {
     }
     public void reduceTributes() {
         this.remainingTributes--;
+    }
+    public void setIO(GameIO io) {
+        this.io = io;
     }
 
     // Constructors
@@ -238,9 +241,9 @@ public class Game implements Serializable {
                         io.broadcast("The attack misses!", entity.getLocation(), ent2);
                         io.broadcast("You were able to dodge!", ent2);
                     } else {
-                        io.broadcast("You dealt " + Helpers.convertPercent(damage) + " damage.");
+                        io.broadcast("You dealt " + Helpers.convertPercent(damage) + " damage.", entity);
                         io.broadcast(entity.getGender().capSubject() + " dealt " + 
-                        Helpers.convertPercent(damage) + " damage to you.");
+                        Helpers.convertPercent(damage) + " damage to you.", ent2);
                         io.broadcast("The attack lands.", entity.getLocation(), exclude);
                     }
                 }));

@@ -4,6 +4,7 @@ import java.util.function.Function;
 
 import com.winterscheidt.hungergames.Classes.Entities.Entity;
 import com.winterscheidt.hungergames.Interfaces.Attainable;
+import com.winterscheidt.hungergames.Interfaces.EntityTextFunction;
 import com.winterscheidt.hungergames.Interfaces.Equippable;
 import com.winterscheidt.hungergames.Interfaces.Interactable;
 import com.winterscheidt.hungergames.Interfaces.Killer;
@@ -13,12 +14,12 @@ public class Weapon extends Item implements Equippable, Attainable, Killer {
     private double accuracy;
     private int uses;
 
-    private final Function<Entity, String> messageGenerator;
-    private final Function<Entity, String> descriptionGenerator;
+    private final EntityTextFunction messageGenerator;
+    private final EntityTextFunction descriptionGenerator;
 
     public Weapon(String name, String description, double damage, double accuracy, int uses,
-        Function<Entity, String> messageGenerator,
-        Function<Entity, String> descriptionGenerator
+        EntityTextFunction messageGenerator,
+        EntityTextFunction descriptionGenerator
     ) {
         super(name, description);
         this.damage = damage;

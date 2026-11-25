@@ -1,6 +1,7 @@
 package com.winterscheidt.hungergames.Utils;
 
 import com.winterscheidt.hungergames.Classes.Entities.Entity;
+import com.winterscheidt.hungergames.Interfaces.EntityTextFunction;
 import com.winterscheidt.hungergames.Interfaces.Killer;
 
 import java.util.function.Function;
@@ -36,10 +37,10 @@ public enum CauseOfDeath implements Killer {
                 g.object() + " got too close to the forcefield...";
             });
 
-    private final Function<Entity, String> messageGenerator;
-    private final Function<Entity, String> descriptionGenerator;
+    private final EntityTextFunction messageGenerator;
+    private final EntityTextFunction descriptionGenerator;
 
-    CauseOfDeath(Function<Entity, String> messageGenerator, Function<Entity, String> descriptionGenerator) {
+    CauseOfDeath(EntityTextFunction messageGenerator, EntityTextFunction descriptionGenerator) {
         this.messageGenerator = messageGenerator;
         this.descriptionGenerator = descriptionGenerator;
     }

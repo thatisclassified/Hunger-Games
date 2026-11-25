@@ -109,7 +109,11 @@ public class Location implements Serializable {
                         entities = true;
                     }
                     if (detection == DetectionLevel.RECOGNIZED) {
-                        result += " - " + entity.getName() + "\n";
+                        result += " - " + entity.getName();
+                        if (game.getIO() instanceof DiscordIO) {
+                            result += "\n-#";
+                        }
+                        result += " (" + entity.getDescription() + ")\n";
                     } else { // SPOTTED
                         result += " - Obscured Figure" + "\n";
                     }

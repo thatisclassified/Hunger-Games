@@ -4,6 +4,7 @@ import com.winterscheidt.hungergames.Classes.Entities.Entity;
 import com.winterscheidt.hungergames.Classes.Entities.Player;
 import com.winterscheidt.hungergames.Classes.Game.DiscordIO;
 import com.winterscheidt.hungergames.Classes.Game.Game;
+import com.winterscheidt.hungergames.Classes.Game.Save;
 
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -40,7 +41,9 @@ public class HungerGamesBot extends ListenerAdapter {
                 Commands.slash("hg-create", "Create a new Hunger Games lobby in this channel"),
                 Commands.slash("hg-join", "Join the active Hunger Games lobby as a tribute")
                         .addOption(OptionType.STRING, "name", "Custom tribute name (defaults to your Discord name)", false),
-                Commands.slash("hg-start", "Start the Hunger Games match!")
+                Commands.slash("hg-start", "Start the Hunger Games match!"),
+                Commands.slash("hg-save", "Save the current Hunger Games match"),
+                Commands.slash("hg-load", "Load a previously saved Hunger Games match in this channel")
         ).queue();
 
         System.out.println("Hunger Games Bot is online and ready!");
@@ -117,6 +120,36 @@ public class HungerGamesBot extends ListenerAdapter {
 
             event.reply("🎺 **May the odds be ever in your favor! The Games have begun!**").queue();
             activeGame.startTurn(0);
+        } else if (command.equals("hg-save")) {
+            if (activeGame == null) {
+                event.reply("No active game to save!").setEphemeral(true).queue();
+                return;
+            }
+            try {
+                Save.save(activeGame, "hungergames_save.dat");
+                event.reply("💾 **Game saved successfully!**").queue();
+            } catch (Exception e) {
+                e.printStackTrace();
+                event.reply("⚠️ Failed to save game: `" + e.getMessage() + "`").setEphemeral(true).queue();
+            }
+
+        } else if (command.equals("hg-load")) {
+            if (!(event.getChannel() instanceof TextChannel channel)) {
+                event.reply("Run `/hg-load` in a server text channel!").setEphemeral(true).queue();
+                return;
+            }
+            try {
+                this.discordIO = new DiscordIO(event.getJDA(), channel);
+                this.activeGame = Save.load("hungergames_save.dat", this.discordIO);
+                this.discordIO.setGame(this.activeGame);
+
+                event.reply("📂 **Saved game loaded!** Resuming turn for **" + activeGame.getCurrentEntity().getName() + "**...").queue();
+                // Re-send the active human player's menu to their DMs!
+                activeGame.openMenu(activeGame.getMainActions(activeGame.getCurrentEntity()));
+            } catch (Exception e) {
+                e.printStackTrace();
+                event.reply("⚠️ Could not load save file: `" + e.getMessage() + "`").setEphemeral(true).queue();
+            }
         }
     }
 

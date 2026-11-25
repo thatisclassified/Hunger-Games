@@ -11,7 +11,7 @@ public abstract class Item implements Inspectable, Serializable {
     // Data fields
     protected String name;
     protected String description;
-    protected boolean bePickedUp = true;
+    // protected boolean bePickedUp = true;
 
     // Constructors
     public Item(String name, String description) {
