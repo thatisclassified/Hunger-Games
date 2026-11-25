@@ -46,6 +46,9 @@ public class Game implements Serializable {
     public boolean isGameOver() {
         return this.gameOver;
     }
+    public int getRemainingTributes() {
+        return this.remainingTributes;
+    }
 
     // Setters
     public void setRemainingTributes(int tributes) {
@@ -72,8 +75,8 @@ public class Game implements Serializable {
         currentEntityIndex = index;
         while (!this.gameOver) {
             currentEntity = entities.get(currentEntityIndex);
-            currentEntity.turnStart(this);
             if (currentEntity.getHealth() > 0) {
+                currentEntity.turnStart(this);
                 openMenu(getMainActions(currentEntity));
 
                 if (currentEntity.isAI()) {
@@ -85,9 +88,18 @@ public class Game implements Serializable {
                     startChoice();
                     return;
                 }
+            } else {
+                currentEntityIndex = (currentEntityIndex + 1) % entities.size();
             }
             if (remainingTributes <= 1) {
                 gameOver = true;
+                // Check for a winner
+                for (Entity victor : entities) {
+                    if (victor instanceof Player && ((Player) victor).getHealth() > 0) {
+                        io.broadcast("Congratulations! " + victor.getName() + " is the victor of the " + 
+                        "Demo Hunger Games!");
+                    }
+                }
             }
         }
     }
@@ -166,7 +178,7 @@ public class Game implements Serializable {
             if (item instanceof Interactable) {
                 actions.add(new GameAction("Interact with " + item.getName(), true, false, () -> {
                 ((Interactable) item).interact(entity, this);
-                io.broadcast("Interacted with " + item.getName(), entity);
+                // Each interactable should broadcast it's own message
             }));
             }
         }

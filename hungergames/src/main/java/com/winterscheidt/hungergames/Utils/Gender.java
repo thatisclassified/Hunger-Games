@@ -21,13 +21,18 @@ public enum Gender {
     public static Gender randomGender() {
         // Depending on audience... This may get changed to just Male / Female
         double rand = Math.random();
-        if (rand <= 0.33) {
+        if (rand >= 0.5) {
             return MALE;
-        } else if (rand <= 0.66) {
-            return FEMALE;
         } else {
-            return NON_BINARY;
+            return FEMALE;
         }
+        // if (rand <= 0.33) {
+        //     return MALE;
+        // } else if (rand <= 0.66) {
+        //     return FEMALE;
+        // } else {
+        //     return NON_BINARY;
+        // }
     }
 
     public String capSubject() { 

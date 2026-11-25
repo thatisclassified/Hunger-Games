@@ -23,6 +23,17 @@ public class Location implements Serializable {
         this.name = name;
         this.description = description;
     }
+    public Location (String name, String description, double baseObscurity, List<Item> items) {
+        this.name = name;
+        this.description = description;
+        this.baseObscurity = baseObscurity;
+        this.items = items;
+    }
+    public Location (String name, String description, double baseObscurity) {
+        this.name = name;
+        this.description = description;
+        this.baseObscurity = baseObscurity;
+    }
     public Location (String name, String description, List<Item> items) {
         this.name = name;
         this.description = description;
@@ -91,8 +102,11 @@ public class Location implements Serializable {
         return this.baseObscurity;
     }
     public String getFullDescription(Game game, Entity requester) {
-        String result = " --- " + this.getName() + " --- \n" + 
-        this.getDescription() + "\n";
+        String result = " --- " + this.getName() + " --- ";
+        if (game.getIO() instanceof DiscordIO) {
+            result = "**" + result + "**";
+        }
+        result += "\n" + this.getDescription() + "\n";
         if (this.items.size() > 0) {
             result += "You see the following items: \n";
             for (Item item : this.items) {

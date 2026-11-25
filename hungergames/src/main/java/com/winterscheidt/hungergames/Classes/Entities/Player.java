@@ -22,6 +22,21 @@ public class Player extends Entity implements Killer {
     // Static Constants
     private static final double MELEE_DAMAGE = 0.08;
     private static final double MELEE_ACCURACY = 0.9;
+    // A list of Hunger-Games sounding names
+    private static final String[][] NAMES = {
+        {"Aurelia", "Sterling", "Vesper", "Topaz", "Lux", "Cassian", "Opal", "Brilliance"},
+        {"Titus", "Octavia", "Marcus", "Sabina", "Corvus", "Livia", "Drusus", "Flavia"},
+        {"Volt", "Circuit", "Teslin", "Cypher", "Nix", "Nova", "Lumen", "Gage"},
+        {"Marina", "Triton", "Pearl", "Reed", "Coral", "Kai", "Nerissa", "Pike"},
+        {"Surge", "Ember", "Watt", "Solis", "Pyre", "Flare", "Jolt", "Vespera"},
+        {"Axle", "Miles", "Track", "Ryder", "Trek", "Scout", "Dash", "Waylon"},
+        {"Briar", "Timber", "Cedar", "Rowan", "Birch", "Aspen", "Bramble", "Sawyer"},
+        {"Weave", "Loom", "Bobbin", "Silk", "Thimble", "Calico", "Stitch", "Burlap"},
+        {"Rye", "Barley", "Oats", "Buck"},
+        {"Tanner", "Colt", "Shepherd", "Bran"},
+        {"Finch", "Thistle", "Clover", "Sage", "Willow", "Sprout", "Fern", "Linden"},
+        {"Flint", "Slate", "Ash", "Cinder", "Soot", "Cole", "Shale", "Pitch"},
+    };
 
     // Fields
     private Inventory inventory = new Inventory();
@@ -38,15 +53,22 @@ public class Player extends Entity implements Killer {
     private double thirst = 0;
 
     // Cosntructors
+    public Player(int district, Location location) {
+        this(NAMES[district - 1][(int) Math.random() * NAMES[district - 1].length], true, district, location, Gender.randomGender());
+    }
+
     // Later I want some static arrays to randomize this
+   public Player(String name, boolean AI, int district, Location location, Gender gender) {
+        this(name, gender.subject() + " looks healthy.", AI, location, district, gender, 
+         0.75 + Math.random() / 2, 0.75 + Math.random() / 2, 0.75 + Math.random() / 2);   
+    }
     public Player(String name, String description, boolean AI, Location location) {
         this(name, description, AI, location, (int) (Math.random() * 12 + 1), Gender.randomGender(), 
         0.75 + Math.random() / 2, 0.75 + Math.random() / 2, 0.75 + Math.random() / 2);
     }
     public Player(String name, boolean AI, Location location, Gender gender) {
         this(name, gender.subject() + " looks healthy.", AI, location, (int) (Math.random() * 12 + 1), gender, 
-         0.75 + Math.random() / 2, 0.75 + Math.random() / 2, 0.75 + Math.random() / 2);
-        
+         0.75 + Math.random() / 2, 0.75 + Math.random() / 2, 0.75 + Math.random() / 2);   
     }
     // And one for all the attributes
     public Player(String name, String description, boolean AI, Location location, int district, Gender gender, double aggression, double smarts, double strength) {
@@ -145,6 +167,9 @@ public class Player extends Entity implements Killer {
     public boolean useItem(Item item, Game game) {
         if (item instanceof Usable) {
             ((Usable) item).use(this, game);
+            if (((Usable) item).getUses() <= 0) {
+                this.inventory.removeItem(item);
+            }
             return true;
         }
         return false;
@@ -196,6 +221,12 @@ public class Player extends Entity implements Killer {
         // Need to implement this further
         this.description = cause.getKillDescription(this);
         game.getIO().broadcast("BOOM!");
+        String deathMessage = cause.getKillMessage(this);
+        game.getIO().broadcast("**You have died.** At the time of your death, there were " +
+            game.getRemainingTributes() + " tributes remaining.\nDon't worry, though. You'll " +
+            "be remembered--for a day or two, at least. \"" + deathMessage + "\""
+        );
+        game.getIO().broadcast(deathMessage, this.location, this);
         game.reduceTributes();
     }
 

@@ -2,6 +2,7 @@ package com.winterscheidt.hungergames.Utils;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import com.winterscheidt.hungergames.Classes.Items.Item;
@@ -9,6 +10,11 @@ import com.winterscheidt.hungergames.Classes.Items.Item;
 public class Inventory implements Serializable {
     private List<Item> inventory = new ArrayList<Item>();
     private int maxSize = 5;
+
+    public Inventory(){}
+    public Inventory(Collection<? extends Item> items) {
+        this.inventory = new ArrayList<Item>(items);
+    }
 
     public List<Item> getItems() {
         return this.inventory;
